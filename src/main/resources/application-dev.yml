@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/fintrack
+    username: ${DB_USER:fintrack}
+    password: ${DB_PASSWORD:fintrack}
+  jpa:
+    show-sql: true
+  thymeleaf:
+    cache: false
