@@ -1,0 +1,30 @@
+<form th:action="@{/register}" th:object="${form}" method="post" class="panel auth-card">
+    <h1>Регистрация</h1>
+
+    <label class="field">Имя
+        <input type="text" th:field="*{name}" autocomplete="name">
+        <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+    </label>
+
+    <label class="field">E-mail
+        <input type="email" th:field="*{email}" autocomplete="email">
+        <span class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+    </label>
+
+    <label class="field">Пароль
+        <input type="password" th:field="*{password}" autocomplete="new-password">
+        <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+    </label>
+
+    <label class="field">Валюта
+        <select th:field="*{currency}">
+            <option value="BYN">BYN</option>
+            <option value="RUB">RUB</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+        </select>
+    </label>
+
+    <button type="submit" class="btn primary">Создать аккаунт</button>
+    <p>Уже есть аккаунт? <a th:href="@{/login}">Войти</a></p>
+</form>
