@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Категория дохода или расхода. {@code user == null} — стандартная категория (ведёт администратор).
+ */
 @Entity
 @Table(name = "categories")
 @Getter
@@ -16,17 +19,21 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 60)
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private CategoryType type;
 
     @Column(nullable = false)
-    private boolean archived;
+    private boolean archived = false;
+
+    public boolean isStandard() {
+        return user == null;
+    }
 }

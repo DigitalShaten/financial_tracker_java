@@ -1,30 +1,33 @@
-<form th:action="@{/register}" th:object="${form}" method="post" class="panel auth-card">
-    <h1>Регистрация</h1>
-
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Регистрация')}"></head>
+<body>
+<div class="auth-wrap">
+  <form class="panel auth-card" th:action="@{/register}" th:object="${form}" method="post" novalidate aria-labelledby="regTitle">
+    <a class="logo" th:href="@{/}" style="padding:0"><span class="logo-mark">F</span><span class="logo-name">FinTrack</span></a>
+    <h1 id="regTitle">Регистрация</h1>
     <label class="field">Имя
-        <input type="text" th:field="*{name}" autocomplete="name">
-        <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+      <input type="text" th:field="*{name}" th:errorclass="invalid" autocomplete="given-name" required>
+      <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
     </label>
-
     <label class="field">E-mail
-        <input type="email" th:field="*{email}" autocomplete="email">
-        <span class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+      <input type="email" th:field="*{email}" th:errorclass="invalid" autocomplete="email" required>
+      <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
     </label>
-
     <label class="field">Пароль
-        <input type="password" th:field="*{password}" autocomplete="new-password">
-        <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+      <input type="password" th:field="*{password}" th:errorclass="invalid" autocomplete="new-password" required>
+      <span class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+      <span class="note">От 8 до 72 символов</span>
     </label>
-
     <label class="field">Валюта
-        <select th:field="*{currency}">
-            <option value="BYN">BYN</option>
-            <option value="RUB">RUB</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-        </select>
+      <select th:field="*{currency}">
+        <option th:each="c : ${currencies}" th:value="${c}" th:text="${c}">BYN</option>
+      </select>
+      <span class="field-error" th:if="${#fields.hasErrors('currency')}" th:errors="*{currency}"></span>
     </label>
-
-    <button type="submit" class="btn primary">Создать аккаунт</button>
-    <p>Уже есть аккаунт? <a th:href="@{/login}">Войти</a></p>
-</form>
+    <button type="submit" class="btn primary">Зарегистрироваться</button>
+    <p class="sub">Уже есть аккаунт? <a th:href="@{/login}">Войти</a></p>
+  </form>
+</div>
+</body>
+</html>

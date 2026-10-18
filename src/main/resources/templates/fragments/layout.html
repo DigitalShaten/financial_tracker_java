@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(title)">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title} + ' — FinTrack'">FinTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+
+<!-- Боковое меню пользователя. active: overview | operations | accounts | goals | family | telegram | profile -->
+<aside class="sb" th:fragment="sidebar(active)">
+  <a class="logo" th:href="@{/dashboard}"><span class="logo-mark">F</span><span class="logo-name">FinTrack</span></a>
+  <nav class="nav" aria-label="Основное меню">
+    <a th:href="@{/dashboard}" th:attr="aria-current=${active == 'overview'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6v9H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 17h6v3H4z"/></svg>Обзор</a>
+    <a th:href="@{/operations}" th:attr="aria-current=${active == 'operations'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>Операции</a>
+    <a th:href="@{/accounts}" th:attr="aria-current=${active == 'accounts'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h3"/></svg>Счета и бюджеты</a>
+    <a th:href="@{/goals}" th:attr="aria-current=${active == 'goals'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>Цели</a>
+    <a th:href="@{/family}" th:attr="aria-current=${active == 'family'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.7.7 3 2.4 3.5 5.2"/></svg>Семья</a>
+    <a th:href="@{/telegram}" th:attr="aria-current=${active == 'telegram'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4 3 11l6 2.5L11.5 20 21 4zM9 13.5l5-4"/></svg>Telegram-бот</a>
+  </nav>
+  <div class="sb-family" th:if="${currentUser != null}">
+    <div class="avs">
+      <span th:each="chip : ${currentUser.familyMembers}" class="av sm"
+            th:classappend="${chip.me} ? 'me' : 'anna'" th:text="${chip.initial}" th:title="${chip.name}">Д</span>
+    </div>
+    <div>
+      <div style="font-weight:600;font-size:14px" th:text="${currentUser.inFamily} ? ${currentUser.familyName} : ${currentUser.name}">Семья Ивановых</div>
+      <div style="font-size:13px;color:var(--muted)"
+           th:text="${currentUser.inFamily} ? ${currentUser.familyMemberNames()} : 'Личный учёт'">Дмитрий, Анна</div>
+    </div>
+    <div class="sb-links">
+      <a th:href="@{/profile}" th:attr="aria-current=${active == 'profile'} ? 'page' : null">Профиль</a>
+      <form class="inline" th:action="@{/logout}" method="post"><button type="submit" class="btn sm">Выйти</button></form>
+    </div>
+  </div>
+</aside>
+
+<!-- Боковое меню администратора. active: users | categories | admins -->
+<aside class="sb" th:fragment="adminSidebar(active)">
+  <a class="logo" th:href="@{/admin/users}"><span class="logo-mark">F</span><span class="logo-name">FinTrack</span></a>
+  <nav class="nav" aria-label="Меню администратора">
+    <a th:href="@{/admin/users}" th:attr="aria-current=${active == 'users'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.7.7 3 2.4 3.5 5.2"/></svg>Пользователи</a>
+    <a th:href="@{/admin/categories}" th:attr="aria-current=${active == 'categories'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>Категории</a>
+    <a th:href="@{/admin/admins}" th:attr="aria-current=${active == 'admins'} ? 'page' : null"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3z"/></svg>Администраторы</a>
+  </nav>
+  <div class="sb-family">
+    <div style="font-weight:600;font-size:14px">Администратор</div>
+    <form th:action="@{/logout}" method="post"><button type="submit" class="btn sm">Выйти</button></form>
+  </div>
+</aside>
+
+<!-- Статус сервиса из Actuator health — в шапке страниц администратора -->
+<span th:fragment="serviceStatus" class="tag" th:classappend="${serviceStatus.up} ? 'family' : 'personal'"
+      role="status" th:text="${serviceStatus.text}">Сервис работает</span>
+
+<!-- Всплывающее сообщение после действия (flash-атрибут toast) -->
+<div th:fragment="toast" class="toast" id="toast" role="status"
+     th:classappend="${toast != null} ? 'show'" th:text="${toast}"></div>
+
+</body>
+</html>

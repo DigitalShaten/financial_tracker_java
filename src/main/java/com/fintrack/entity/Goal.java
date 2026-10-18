@@ -9,12 +9,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
+/**
+ * Финансовая цель. {@code family == null} — личная цель создателя, иначе семейная.
+ */
 @Entity
 @Table(name = "goals")
 @Getter
 @Setter
 @NoArgsConstructor
-
 public class Goal {
 
     @Id
@@ -23,27 +25,33 @@ public class Goal {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id")
-    private User user;
+    private User owner;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "family_id")
     private Family family;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String name;
 
+    /** Стоимость цели в сегодняшних ценах. */
     @Column(name = "target_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal targetAmount;
 
+    /** Первое число месяца, к которому нужно накопить. */
     @Column(name = "target_date", nullable = false)
     private LocalDate targetDate;
 
     @Column(name = "inflation_rate", nullable = false, precision = 5, scale = 2)
-    private BigDecimal inflationRate;
+    private BigDecimal inflationRate = BigDecimal.ZERO;
 
     @Column(name = "annual_rate", nullable = false, precision = 5, scale = 2)
-    private BigDecimal annualRate;
+    private BigDecimal annualRate = BigDecimal.ZERO;
 
-    @Column(name  = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    public boolean isFamilyGoal() {
+        return family != null;
+    }
 }

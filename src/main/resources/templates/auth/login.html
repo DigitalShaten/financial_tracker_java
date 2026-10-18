@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Вход</title>
-</head>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Вход')}"></head>
 <body>
-<h2>Вход в FinTrack</h2>
-<form th:action="@{/login}" method="post">
-    <div>
-        <label>Email:</label>
-        <input type="email" name="email" required/>
-    </div>
-    <div>
-        <label>Пароль:</label>
-        <input type="password" name="password" required/>
-    </div>
-    <button type="submit">Войти</button>
-</form>
-<p><a th:href="@{/register}">Зарегистрироваться</a></p>
+<div class="auth-wrap">
+  <form class="panel auth-card" th:action="@{/login}" method="post" aria-labelledby="loginTitle">
+    <a class="logo" th:href="@{/}" style="padding:0"><span class="logo-mark">F</span><span class="logo-name">FinTrack</span></a>
+    <h1 id="loginTitle">Вход</h1>
+    <div class="status ok" th:if="${infoMessage}"><b th:text="${infoMessage}">Аккаунт создан, войдите</b></div>
+    <div class="status warn" th:if="${errorMessage}" role="alert"><b th:text="${errorMessage}">Неверный e-mail или пароль</b></div>
+    <label class="field">E-mail<input type="email" name="email" autocomplete="username" required autofocus></label>
+    <label class="field">Пароль<input type="password" name="password" autocomplete="current-password" required></label>
+    <button type="submit" class="btn primary">Войти</button>
+    <p class="sub">Нет аккаунта? <a th:href="@{/register}">Зарегистрироваться</a></p>
+  </form>
+</div>
 </body>
 </html>

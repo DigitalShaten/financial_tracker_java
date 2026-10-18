@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Страница не найдена')}"></head>
+<body>
+<div class="auth-wrap">
+  <div class="panel auth-card">
+    <a class="logo" th:href="@{/}" style="padding:0"><span class="logo-mark">F</span><span class="logo-name">FinTrack</span></a>
+    <h1>Страница не найдена</h1>
+    <p class="sub" th:text="${message != null and message != ''} ? ${message} : 'Такой страницы нет или у вас нет к ней доступа.'">Такой страницы нет или у вас нет к ней доступа.</p>
+    <a class="btn primary" th:href="@{/}">На главную</a>
+  </div>
+</div>
+</body>
+</html>

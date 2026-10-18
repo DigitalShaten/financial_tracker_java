@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Форма операции (новая и изменение). action — адрес отправки, heading — заголовок, cancel — показывать «Отмена» -->
+<form th:fragment="opForm(action, heading, cancel)" class="panel grow1" th:action="${action}" th:object="${form}"
+      method="post" data-op-form aria-labelledby="opFormTitle" novalidate>
+  <h2 id="opFormTitle" th:text="${heading}">Новая операция</h2>
+  <div class="status warn" th:if="${#fields.hasGlobalErrors()}" role="alert"><b th:each="err : ${#fields.globalErrors()}" th:text="${err}">Ошибка</b></div>
+
+  <div class="seg box" role="radiogroup" aria-label="Тип операции">
+    <label><input class="sr-only" type="radio" th:field="*{type}" value="EXPENSE">Расход</label>
+    <label><input class="sr-only" type="radio" th:field="*{type}" value="INCOME">Доход</label>
+    <label><input class="sr-only" type="radio" th:field="*{type}" value="TRANSFER">Перевод</label>
+  </div>
+
+  <label class="field">Название
+    <input type="text" th:field="*{title}" th:errorclass="invalid" placeholder="Например, супермаркет" maxlength="120" required>
+    <span class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+  </label>
+  <label class="field"><span th:text="'Сумма, ' + ${currentUser.currency}">Сумма, BYN</span>
+    <input class="big" type="text" inputmode="decimal" th:field="*{amount}" th:errorclass="invalid" placeholder="0,00" required>
+    <span class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></span>
+  </label>
+  <label class="field" data-field="category" th:hidden="*{type != null and type.name() == 'TRANSFER'}">Категория
+    <select th:field="*{categoryId}">
+      <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"
+              th:attr="data-type=${c.type.name()}">Продукты</option>
+    </select>
+    <span class="field-error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></span>
+  </label>
+  <label class="field">Счёт
+    <select th:field="*{accountId}">
+      <option th:each="a : ${myAccounts}" th:value="${a.id}" th:text="${a.name}" th:attr="data-shared=${a.shared}">Общий счёт</option>
+    </select>
+    <span class="field-error" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></span>
+  </label>
+  <p class="vis-note" data-vis-note th:attr="data-family-names=${familyNames}" th:hidden="${familyNames == null}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span th:text="${familyNames != null} ? 'Операция будет видна: ' + ${familyNames} : ''">Операция будет видна Анне</span>
+  </p>
+  <label class="field" data-field="target" th:hidden="*{type == null or type.name() != 'TRANSFER'}">Счёт зачисления
+    <select th:field="*{targetAccountId}">
+      <option value="">— выберите счёт —</option>
+      <option th:each="a : ${myAccounts}" th:value="${a.id}" th:text="${a.name}">Наличные</option>
+    </select>
+  </label>
+  <label class="field">Дата
+    <input type="date" th:field="*{operationDate}" th:errorclass="invalid" required>
+    <span class="field-error" th:if="${#fields.hasErrors('operationDate')}" th:errors="*{operationDate}"></span>
+  </label>
+  <label class="field">Комментарий
+    <textarea th:field="*{comment}" maxlength="500" placeholder="Необязательно"></textarea>
+    <span class="field-error" th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}"></span>
+  </label>
+  <div class="row" style="gap:10px;margin-top:4px">
+    <button type="submit" class="btn primary" style="flex:1 1 160px">Сохранить</button>
+    <button th:unless="${cancel}" type="reset" class="btn" style="flex:0 1 120px">Очистить</button>
+    <a th:if="${cancel}" class="btn" th:href="@{/operations}" style="flex:0 1 120px">Отмена</a>
+  </div>
+</form>
+</body>
+</html>

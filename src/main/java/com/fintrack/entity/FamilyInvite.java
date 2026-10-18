@@ -7,12 +7,14 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Одноразовый код приглашения в семью.
+ */
 @Entity
 @Table(name = "family_invites")
 @Getter
 @Setter
 @NoArgsConstructor
-
 public class FamilyInvite {
 
     @Id
@@ -23,16 +25,18 @@ public class FamilyInvite {
     @JoinColumn(name = "family_id")
     private Family family;
 
-    @Column(nullable = false, unique = true)
+    /** Формат XXX-XXX. */
+    @Column(nullable = false, unique = true, length = 16)
     private String code;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by")
-    private User user;
+    private User createdBy;
 
-    @Column(name  = "expires_at", nullable = false, updatable = false)
-    private OffsetDateTime expiresAt = OffsetDateTime.now();
+    @Column(name = "expires_at", nullable = false)
+    private OffsetDateTime expiresAt;
 
-    @Column(name  = "used_at", updatable = false)
-    private OffsetDateTime usedAt = OffsetDateTime.now();
+    /** Момент использования; null — код ещё не использован. */
+    @Column(name = "used_at")
+    private OffsetDateTime usedAt;
 }
