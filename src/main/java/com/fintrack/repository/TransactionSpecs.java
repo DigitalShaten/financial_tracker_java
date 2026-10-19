@@ -6,15 +6,12 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.util.Collection;
 
-/**
- * Условия фильтра операций. Пустой параметр — «без ограничения» (cb.conjunction()).
- */
 public final class TransactionSpecs {
 
     private TransactionSpecs() {
     }
 
-    /** Только операции на видимых счетах. Пустое множество — ни одной операции. */
+    /** Только операции на видимых счетах. Пустое множество - ни одной операции. */
     public static Specification<Transaction> onAccounts(Collection<Long> accountIds) {
         return (root, query, cb) -> accountIds.isEmpty()
                 ? cb.disjunction()
@@ -56,9 +53,12 @@ public final class TransactionSpecs {
             if (text == null || text.isBlank()) {
                 return cb.conjunction();
             }
-            String like = "%" + text.trim().toLowerCase() + "%";
-            return cb.or(cb.like(cb.lower(root.get("title")), like),
-                    cb.like(cb.lower(root.get("comment")), like));
+            // значение уходит в запрос параметром; % и _ экранируем, чтобы искались как обычные символы
+            String escaped = text.trim().toLowerCase()
+                    .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+            String like = "%" + escaped + "%";
+            return cb.or(cb.like(cb.lower(root.get("title")), like, '\\'),
+                    cb.like(cb.lower(root.get("comment")), like, '\\'));
         };
     }
 

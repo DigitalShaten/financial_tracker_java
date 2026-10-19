@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 
-/**
- * Бюджеты: установка лимита и копирование с прошлого месяца. Панель — на странице «Счета и бюджеты».
- */
 @Controller
 @RequiredArgsConstructor
 public class BudgetController {
@@ -30,10 +28,13 @@ public class BudgetController {
     public String setLimit(@AuthenticationPrincipal CustomUserDetails me,
                            @Valid @ModelAttribute BudgetForm form, BindingResult binding,
                            RedirectAttributes redirect) {
+        YearMonth month = binding.hasErrors() ? null : toMonth(form.getMonth());
         if (binding.hasErrors()) {
             redirect.addFlashAttribute("toast", binding.getAllErrors().get(0).getDefaultMessage());
+        } else if (month == null) {
+            redirect.addFlashAttribute("toast", "Неверный месяц");
+            return "redirect:/accounts#budgets";
         } else {
-            YearMonth month = YearMonth.parse(form.getMonth());
             try {
                 budgetService.setLimit(me.id(), form.getCategoryId(), month, form.getLimitAmount());
                 redirect.addFlashAttribute("toast", form.getLimitAmount() == null || form.getLimitAmount().signum() == 0
@@ -49,12 +50,25 @@ public class BudgetController {
     @PostMapping("/budgets/copy-previous")
     public String copyPrevious(@AuthenticationPrincipal CustomUserDetails me,
                                @RequestParam String month, RedirectAttributes redirect) {
-        YearMonth target = YearMonth.parse(month);
+        YearMonth target = toMonth(month);
+        if (target == null) {
+            redirect.addFlashAttribute("toast", "Неверный месяц");
+            return "redirect:/accounts#budgets";
+        }
         int copied = budgetService.copyPrevious(me.id(), target);
         redirect.addFlashAttribute("toast", copied == 0
                 ? "Копировать нечего: в " + DateFormat.monthPrepositional(target.minusMonths(1).getMonth()) + " новых лимитов нет"
                 : "Скопировано лимитов: " + copied);
         redirect.addAttribute("month", month);
         return "redirect:/accounts#budgets";
+    }
+
+    // "2026-13" проходит проверку формата, но месяца такого нет
+    private static YearMonth toMonth(String value) {
+        try {
+            return YearMonth.parse(value);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 }
