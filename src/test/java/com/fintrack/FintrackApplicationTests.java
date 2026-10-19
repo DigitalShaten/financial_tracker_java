@@ -1,0 +1,15 @@
+package com.fintrack;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+@SpringBootTest
+@ActiveProfiles("test")
+class FintrackApplicationTests {
+
+    @Test
+    void contextLoads() {
+        // Контекст поднимается: миграции применены, схема прошла validate, бины созданы
+    }
+}
