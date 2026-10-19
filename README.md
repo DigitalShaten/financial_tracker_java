@@ -10,7 +10,7 @@ FinTrack is a web application with a Telegram bot for tracking and planning pers
 - **Budgets** – monthly limits per expense category, copy limits from the previous month, "can spend today" amount on the dashboard.
 - **Family** – invite family members with a one-time code (valid 24 h). Members see each other's shared accounts, but can change only their own data. Hidden accounts stay private.
 - **Goals** – personal and family goals; the monthly contribution is calculated with inflation and deposit interest, plus a realism check against your average free cash.
-- **Telegram bot** – monthly report (sent in the user's time zone), budget overrun notifications, `/balance` and `/today` commands.
+- **Telegram bot** – add expenses right from the chat (pick a category with a button, send the amount and a comment), monthly report (sent in the user's time zone), budget overrun notifications, `/balance` and `/today` commands.
 - **Admin panel** – users (search, block/unblock), standard categories, administrators, service health.
 
 ## Tech stack
@@ -50,6 +50,8 @@ docker compose up -d db
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
+Variables from `.env` in the project root are read by the app in the IDE too, there is no need to copy them into the run configuration.
+
 ### Demo accounts
 
 | Who | E-mail | Password |
@@ -64,15 +66,27 @@ The bot is disabled by default – the app works without it and messages are wri
 
 1. Create a bot with [@BotFather](https://t.me/BotFather) (`/newbot`) and copy the token.
 2. Set in `.env`: `TELEGRAM_BOT_ENABLED=true`, `TELEGRAM_BOT_TOKEN=...`, `TELEGRAM_BOT_USERNAME=...` (without @).
-3. Restart the app.
+3. Restart the app. The log should contain `Telegram-бот запущен: @your_bot`. If it says `Telegram-бот выключен` instead, the app does not see `TELEGRAM_BOT_ENABLED=true`.
 4. Optionally send `/setcommands` to @BotFather:
    ```text
-   start - link account with a code
+   add - add an expense
    balance - account balances
    today - today's expenses and daily limit
+   cancel - cancel adding an expense
+   start - link account with a code
    stop - unlink the bot
    ```
-5. On the site open "Telegram-бот" → "Получить код" and send the code to the bot.
+5. On the site open "Telegram-бот" → "Получить код" and send the code to the bot (`/start CODE` or just the 8 digits).
+
+### Adding an expense from the chat
+
+1. Send `/add` – the bot shows buttons with your expense categories (standard and your own).
+2. Tap a category and send the amount: `46,80`, `46.80` or `1 286,40`.
+3. Send a comment or tap "Без комментария".
+
+The expense is saved for today, to the same account as your previous expense (or the first active account if there is none). The comment becomes the operation title, without a comment the title is the category name. If the expense pushes the category over its limit, the bot sends a budget notification right away.
+
+`/cancel` or any other command cancels the input; an unfinished input is dropped after 15 minutes or when the app restarts. Category buttons are checked against the user, so a forged button with another user's category is rejected.
 
 ## Project structure
 

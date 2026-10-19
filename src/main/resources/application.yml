@@ -1,6 +1,9 @@
 spring:
   application:
     name: fintrack
+  config:
+    # при запуске из IDE переменные берутся из .env в корне проекта (в Docker их передаёт compose)
+    import: optional:file:.env[.properties]
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   jpa:

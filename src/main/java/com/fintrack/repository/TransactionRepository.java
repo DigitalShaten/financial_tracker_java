@@ -30,6 +30,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
 
     Optional<Transaction> findByIdAndUser_Id(Long id, Long userId);
 
+    /** Последний расход пользователя - чтобы бот записывал на тот же счёт. */
+    Optional<Transaction> findFirstByUser_IdAndTypeOrderByIdDesc(Long userId, TransactionType type);
+
     @Query("""
             select count(t) > 0 from Transaction t
             where t.account.id = :accountId or t.targetAccount.id = :accountId
