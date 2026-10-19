@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/**
- * Семья: создание, вступление по коду, приглашения, видимость счетов, выход, исключение, роспуск.
- */
 @Controller
 @RequiredArgsConstructor
 public class FamilyController {
@@ -109,6 +106,7 @@ public class FamilyController {
             return;
         }
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        model.addAttribute("members", familyService.members(me.id()));
         model.addAttribute("invite", familyService.activeInvite(me.id(), baseUrl).orElse(null));
         model.addAttribute("myAccounts", accountService.accountViews(me.id()).stream().filter(a -> !a.archived()).toList());
     }

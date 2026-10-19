@@ -3,10 +3,23 @@ package com.fintrack.service;
 import com.fintrack.dto.CurrentUserView;
 import com.fintrack.dto.InviteView;
 import com.fintrack.dto.MemberView;
-import com.fintrack.entity.*;
+import com.fintrack.entity.Family;
+import com.fintrack.entity.FamilyInvite;
+import com.fintrack.entity.FamilyMember;
+import com.fintrack.entity.FamilyRole;
+import com.fintrack.entity.TelegramLink;
+import com.fintrack.entity.TransactionType;
+import com.fintrack.entity.User;
 import com.fintrack.exception.BusinessException;
 import com.fintrack.exception.NotFoundException;
-import com.fintrack.repository.*;
+import com.fintrack.repository.AccountRepository;
+import com.fintrack.repository.FamilyInviteRepository;
+import com.fintrack.repository.FamilyMemberRepository;
+import com.fintrack.repository.FamilyRepository;
+import com.fintrack.repository.GoalRepository;
+import com.fintrack.repository.TelegramLinkRepository;
+import com.fintrack.repository.TransactionRepository;
+import com.fintrack.repository.UserRepository;
 import com.fintrack.util.DateFormat;
 import com.fintrack.util.MoneyFormat;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +27,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.*;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Семья: создание, приглашения, вступление, выход, исключение, роспуск.
@@ -36,6 +56,7 @@ public class FamilyService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final TelegramLinkRepository telegramLinkRepository;
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
 
@@ -99,7 +120,7 @@ public class FamilyService {
 
     /**
      * Выход из семьи. Участник уходит со всеми своими данными, его семейные цели становятся личными.
-     * Владелец выйти не может, пока в семье есть другие участники; если он один — семья распускается.
+     * Владелец выйти не может, пока в семье есть другие участники; если он один - семья распускается.
      */
     @Transactional
     public void leave(Long userId) {
@@ -116,7 +137,7 @@ public class FamilyService {
         memberRepository.delete(member);
     }
 
-    /** Исключение участника владельцем (себя — нельзя). */
+    /** Исключение участника владельцем (себя - нельзя). */
     @Transactional
     public void removeMember(Long ownerId, Long memberUserId) {
         FamilyMember owner = ownerMembership(ownerId);
@@ -140,7 +161,6 @@ public class FamilyService {
         familyRepository.deleteFamilyById(familyId);
     }
 
-    // ---------------------------------------------------------------- для страницы
 
     @Transactional(readOnly = true)
     public Optional<FamilyMember> findMembership(Long userId) {
@@ -155,6 +175,30 @@ public class FamilyService {
                 .flatMap(m -> inviteRepository.findFirstByFamily_IdAndUsedAtIsNullAndExpiresAtAfterOrderByExpiresAtDesc(
                         m.getFamily().getId(), now()))
                 .map(i -> new InviteView(i.getCode(), expiresText(i, ownerId), baseUrl + "/family/join?code=" + i.getCode()));
+    }
+
+    /** Участники с ролью, статусом Telegram и расходами за текущий месяц на открытых счетах. */
+    @Transactional(readOnly = true)
+    public List<MemberView> members(Long userId) {
+        FamilyMember me = membership(userId);
+        List<FamilyMember> members = memberRepository.findAllWithUsers(me.getFamily().getId());
+        Set<Long> linked = telegramLinkRepository.findAllByUser_IdIn(members.stream().map(m -> m.getUser().getId()).toList())
+                .stream().filter(TelegramLink::isLinked).map(l -> l.getUser().getId()).collect(Collectors.toSet());
+        User viewer = userRepository.findById(userId).orElseThrow();
+        YearMonth month = YearMonth.now(clock.withZone(ZoneId.of(viewer.getTimeZone())));
+        return members.stream().map(m -> {
+            User u = m.getUser();
+            Set<Long> openAccounts = accountRepository.findAllByUser_IdInAndSharedWithFamilyTrueAndArchivedFalse(List.of(u.getId()))
+                    .stream().map(a -> a.getId()).collect(Collectors.toSet());
+            var spent = transactionRepository.sumByTypeOrZero(openAccounts, TransactionType.EXPENSE,
+                    month.atDay(1), month.atEndOfMonth());
+            boolean isMe = u.getId().equals(userId);
+            String joined = isMe ? "Это вы" : "В семье с " + DateFormat.dayMonthYear(
+                    m.getJoinedAt().atZoneSameInstant(ZoneId.of(viewer.getTimeZone())).toLocalDate());
+            return new MemberView(u.getId(), u.getName(), CurrentUserView.initialOf(u.getName()), isMe,
+                    m.getRole() == FamilyRole.OWNER, m.getRole() == FamilyRole.OWNER ? "Владелец семьи" : "Участник",
+                    linked.contains(u.getId()), joined, MoneyFormat.format(spent, viewer.getCurrency()));
+        }).toList();
     }
 
     /** Код вводится без учёта регистра и пробелов; дефис можно не ставить. */

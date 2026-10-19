@@ -1,10 +1,28 @@
 package com.fintrack.service;
 
-import com.fintrack.dto.*;
-import com.fintrack.entity.*;
+import com.fintrack.dto.CurrentUserView;
+import com.fintrack.dto.MemberChip;
+import com.fintrack.dto.PasswordForm;
+import com.fintrack.dto.ProfileForm;
+import com.fintrack.dto.RegisterForm;
+import com.fintrack.entity.Account;
+import com.fintrack.entity.AccountType;
+import com.fintrack.entity.FamilyMember;
+import com.fintrack.entity.FamilyRole;
+import com.fintrack.entity.NotificationSettings;
+import com.fintrack.entity.Role;
+import com.fintrack.entity.User;
 import com.fintrack.exception.BusinessException;
 import com.fintrack.exception.NotFoundException;
-import com.fintrack.repository.*;
+import com.fintrack.repository.AccountRepository;
+import com.fintrack.repository.BudgetRepository;
+import com.fintrack.repository.FamilyInviteRepository;
+import com.fintrack.repository.FamilyMemberRepository;
+import com.fintrack.repository.FamilyRepository;
+import com.fintrack.repository.GoalRepository;
+import com.fintrack.repository.NotificationSettingsRepository;
+import com.fintrack.repository.TransactionRepository;
+import com.fintrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +48,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final NotificationSettingsRepository settingsRepository;
     private final FamilyMemberRepository memberRepository;
     private final FamilyRepository familyRepository;
     private final FamilyInviteRepository inviteRepository;
@@ -40,7 +59,7 @@ public class UserService {
 
     /**
      * Регистрация в одной транзакции: пользователь, настройки уведомлений по умолчанию
-     * и счёт «Наличные» (видно семье, баланс 0).
+     * и счёт "Наличные" (видно семье, баланс 0).
      */
     @Transactional
     public User register(RegisterForm form) {
@@ -56,6 +75,9 @@ public class UserService {
         user.setRole(Role.USER);
         userRepository.save(user);
 
+        NotificationSettings settings = new NotificationSettings();
+        settings.setUser(user);
+        settingsRepository.save(settings);
 
         Account cash = new Account();
         cash.setUser(user);
@@ -120,7 +142,7 @@ public class UserService {
 
     /**
      * Профиль: имя, валюта, часовой пояс. Валюта счетов меняется вместе с валютой пользователя
-     * (в MVP суммы не конвертируются — см. README).
+     * (суммы не пересчитываются по курсу).
      */
     @Transactional
     public void updateProfile(Long userId, ProfileForm form) {
@@ -152,7 +174,7 @@ public class UserService {
 
     /**
      * Удаление учётной записи с подтверждением паролем. Владелец семьи с другими участниками
-     * сначала распускает семью; если он в семье один — семья удаляется вместе с ним.
+     * сначала распускает семью; если он в семье один - семья удаляется вместе с ним.
      * Остальные данные пользователя удаляются каскадно (ON DELETE CASCADE в схеме).
      */
     @Transactional

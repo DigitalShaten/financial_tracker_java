@@ -1,9 +1,20 @@
 package com.fintrack.service;
 
-import com.fintrack.dto.*;
+import com.fintrack.dto.BudgetRow;
+import com.fintrack.dto.ChartColumn;
+import com.fintrack.dto.DashboardView;
+import com.fintrack.dto.GoalMini;
+import com.fintrack.dto.MemberOption;
+import com.fintrack.dto.MonthAuthorTotal;
+import com.fintrack.dto.OperationView;
+import com.fintrack.dto.ViewOption;
+import com.fintrack.entity.NotificationSettings;
+import com.fintrack.entity.TelegramLink;
 import com.fintrack.entity.TransactionType;
 import com.fintrack.entity.User;
 import com.fintrack.repository.AccountRepository;
+import com.fintrack.repository.NotificationSettingsRepository;
+import com.fintrack.repository.TelegramLinkRepository;
 import com.fintrack.repository.TransactionRepository;
 import com.fintrack.service.calc.DailyAllowanceCalculator;
 import com.fintrack.util.DateFormat;
@@ -17,10 +28,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
- * Собирает страницу «Обзор» для выбранного режима («Я», участник, «Вместе») и месяца.
+ * Собирает страницу "Обзор" для выбранного режима ("Я", участник, "Вместе") и месяца.
  */
 @Service
 @RequiredArgsConstructor
@@ -37,6 +53,8 @@ public class DashboardService {
     private final BudgetService budgetService;
     private final GoalService goalService;
     private final UserService userService;
+    private final TelegramLinkRepository telegramLinkRepository;
+    private final NotificationSettingsRepository settingsRepository;
 
     @Transactional(readOnly = true)
     public DashboardView build(Long userId, ViewMode mode, YearMonth month) {
@@ -78,6 +96,7 @@ public class DashboardService {
         List<OperationView> recent = transactionService.recent(userId, visible, to, RECENT_LIMIT);
 
         String legendOthers = othersLegend(mode, members);
+        String[] banner = banner(userId, members.size() > 1, current);
 
         return new DashboardView(user.getName(), DateFormat.monthTitle(month), month.toString(),
                 month.minusMonths(1).toString(), month.isBefore(current) ? month.plusMonths(1).toString() : null,
@@ -85,7 +104,8 @@ public class DashboardService {
                 MoneyFormat.format(balance), Plurals.count(visible.size(), "счёт", "счёта", "счетов"),
                 MoneyFormat.format(income), MoneyFormat.format(expense), share, todayText, todayHint,
                 budgets, goals, recent, mode.isAll() && members.size() > 1,
-                chart(userId, visible, month), mode.includesMe() ? user.getName() : null, legendOthers);
+                chart(userId, visible, month), mode.includesMe() ? user.getName() : null, legendOthers,
+                banner[0], banner[1], banner[2]);
     }
 
     /** Переключатель показывается, только если в семье есть другие участники. */
@@ -157,5 +177,25 @@ public class DashboardService {
             return 0;
         }
         return value.multiply(BigDecimal.valueOf(CHART_HEIGHT_PX)).divide(max, 0, RoundingMode.HALF_UP).intValue();
+    }
+
+    /** Баннер Telegram: {заголовок, текст, действие}. */
+    private String[] banner(Long userId, boolean inFamilyWithOthers, YearMonth current) {
+        boolean linked = telegramLinkRepository.findByUser_Id(userId).map(TelegramLink::isLinked).orElse(false);
+        if (!linked) {
+            return new String[]{"Подключите Telegram-бота, чтобы получать ежемесячный отчёт",
+                    "Итоги месяца, бюджеты и прогресс по целям — в мессенджере", "Подключить"};
+        }
+        NotificationSettings s = settingsRepository.findById(userId).orElse(null);
+        if (s == null || !s.isMonthlyReport()) {
+            return new String[]{"Ежемесячный отчёт в Telegram выключен",
+                    "Включите его в настройках бота", "Настроить отчёт"};
+        }
+        LocalDate reportDate = current.plusMonths(1).atDay(s.getReportDay());
+        String title = "Отчёт за " + DateFormat.monthName(current.getMonth()) + " придёт в Telegram "
+                + DateFormat.dayMonth(reportDate) + " в " + s.getReportHour() + ":00";
+        String text = "Итоги месяца, бюджеты и прогресс по целям"
+                + (inFamilyWithOthers && s.isFamilyReport() ? " — для вас и семьи" : "");
+        return new String[]{title, text, "Настроить отчёт"};
     }
 }

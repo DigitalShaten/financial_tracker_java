@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Telegram-бот')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('telegram')}"></aside>
+  <main>
+    <section class="view active" id="telegram" aria-label="Telegram-бот">
+      <div class="head"><div><p>Отчёты и уведомления в мессенджере</p><h1>Telegram-бот</h1></div></div>
+
+      <div class="row">
+        <div style="flex:1 1 440px;min-width:0;display:flex;flex-direction:column;gap:16px">
+
+          <!-- ============ Подключение ============ -->
+          <div class="panel">
+            <h2>Подключение</h2>
+
+            <div class="conn" th:if="${status.linked}">
+              <div class="person">
+                <span class="av me" th:text="${#strings.substring(currentUser.name, 0, 1)}">Д</span>
+                <span><b th:text="${currentUser.name} + ' · бот подключён'">Дмитрий · бот подключён</b><small th:text="${status.linkedText}">Подключено 3 сентября 2026</small></span>
+              </div>
+              <form th:action="@{/telegram/unlink}" method="post" data-confirm="Отключить бота? Отчёты и уведомления перестанут приходить.">
+                <button type="submit" class="btn sm">Отключить</button>
+              </form>
+            </div>
+
+            <div class="pending" th:unless="${status.linked}">
+              <div class="person">
+                <span class="av me" th:text="${#strings.substring(currentUser.name, 0, 1)}">Д</span>
+                <span><b>Бот ещё не подключён</b><small style="font-size:13px">Подключите его, чтобы получать отчёт за месяц и уведомления о бюджете</small></span>
+              </div>
+              <ol>
+                <li>Открыть бота <b style="color:var(--ink)" th:text="'@' + ${botUsername}">@fintrack_bot</b> в Telegram</li>
+                <li>Нажать «Старт» и отправить код из личного кабинета</li>
+              </ol>
+              <div class="row" style="align-items:center;gap:12px" th:if="${status.code != null}">
+                <span class="bot-code" th:text="${status.code}">4821 9037</span>
+                <span style="font-size:13px;color:var(--muted)" th:text="${status.codeExpiresText}">Код одноразовый, действует 15 минут</span>
+              </div>
+              <form th:action="@{/telegram/link-code}" method="post">
+                <button type="submit" class="btn primary" th:text="${status.code != null} ? 'Получить новый код' : 'Получить код'">Получить код</button>
+              </form>
+            </div>
+
+            <div class="person" th:each="m : ${otherMembers}">
+              <span class="av anna" th:text="${m.initial}">А</span>
+              <span><b th:text="${m.name}">Анна</b>
+                <small th:text="${m.telegramLinked} ? 'Telegram подключён' : 'Telegram не подключён — отправьте инструкцию: открыть @' + ${botUsername} + ' и отправить код из своего кабинета'">Telegram подключён</small></span>
+            </div>
+          </div>
+
+          <!-- ============ Что присылать ============ -->
+          <form class="panel" style="gap:4px" th:action="@{/telegram/settings}" th:object="${settingsForm}" method="post">
+            <h2 style="margin-bottom:10px">Что присылать</h2>
+            <label class="opt"><input type="checkbox" th:field="*{monthlyReport}"><span><b>Ежемесячный отчёт</b><small>Доходы, расходы, топ категорий, бюджеты и цели за прошлый месяц</small></span></label>
+            <div class="opt-sub">
+              <label class="field">День
+                <select th:field="*{reportDay}" th:classappend="${#fields.hasErrors('reportDay')} ? 'invalid'">
+                  <option th:each="d : ${days}" th:value="${d}" th:text="${d} + ' число'">1 число</option>
+                </select>
+                <span class="field-error" th:if="${#fields.hasErrors('reportDay')}" th:errors="*{reportDay}"></span>
+              </label>
+              <label class="field">Время
+                <select th:field="*{reportHour}" th:classappend="${#fields.hasErrors('reportHour')} ? 'invalid'">
+                  <option th:each="h : ${hours}" th:value="${h}" th:text="${#numbers.formatInteger(h, 2)} + ':00'">10:00</option>
+                </select>
+                <span class="field-error" th:if="${#fields.hasErrors('reportHour')}" th:errors="*{reportHour}"></span>
+              </label>
+            </div>
+            <label class="opt"><input type="checkbox" th:field="*{familyReport}"><span><b>Семейный отчёт</b><small>Общая сводка по открытым счетам для всех участников семьи</small></span></label>
+            <label class="opt"><input type="checkbox" th:field="*{budgetAlerts}"><span><b>Превышение бюджета</b><small>Сообщение, когда категория выходит за лимит месяца</small></span></label>
+            <label class="opt disabled"><input type="checkbox" disabled><span><span class="row" style="gap:8px;align-items:center"><b>Выводы и советы от ИИ</b><span class="tag personal">Скоро</span></span><small>Короткий разбор месяца и один совет, где можно сэкономить</small></span></label>
+            <div class="row" style="gap:10px;margin-top:10px">
+              <button type="submit" class="btn primary">Сохранить настройки</button>
+              <button type="submit" class="btn" th:formaction="@{/telegram/test-report}" th:disabled="${!status.linked}"
+                      th:title="${status.linked} ? null : 'Сначала подключите бота'">Отправить тестовый отчёт</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ============ Так будет выглядеть отчёт ============ -->
+        <div class="panel chat" style="flex:1 1 340px;min-width:0;gap:14px">
+          <h2>Так будет выглядеть отчёт</h2>
+          <div class="person"><span class="av me" style="font-family:var(--display)">F</span><span><b>FinTrack</b><small style="font-size:12px;color:var(--ink2)">бот</small></span></div>
+          <div class="bubble num report" th:text="${preview}">Отчёт за август 2026</div>
+          <div class="chat-btns"><a th:href="@{/dashboard(month=${reportMonth})}">Подробный отчёт</a><a th:href="@{/accounts(month=${reportMonth})}">Бюджеты</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>
