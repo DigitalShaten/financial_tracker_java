@@ -41,7 +41,7 @@ class TelegramPageIntegrationTest extends IntegrationTest {
         mvc.perform(get("/telegram").with(user(fixtures.principalOf(dmitry))))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Бот ещё не подключён")))
-                .andExpect(content().string(containsString("@fintrack_bot")))
+                .andExpect(content().string(containsString("@Fin_track_mega_bot")))
                 .andExpect(content().string(containsString("Получить код")))
                 .andExpect(content().string(containsString("Выводы и советы от ИИ")))
                 .andExpect(content().string(containsString("disabled")))

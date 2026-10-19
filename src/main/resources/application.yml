@@ -22,7 +22,7 @@ telegram:
   bot:
     enabled: ${TELEGRAM_BOT_ENABLED:false}
     token: ${TELEGRAM_BOT_TOKEN:}
-    username: ${TELEGRAM_BOT_USERNAME:fintrack_bot}
+    username: ${TELEGRAM_BOT_USERNAME:Fin_track_mega_bot}
 
 management:
   endpoints:
