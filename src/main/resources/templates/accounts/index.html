@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Счета и бюджеты')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('accounts')}"></aside>
+  <main>
+    <section class="view active" aria-label="Счета и бюджеты">
+      <div class="head">
+        <div><p>Счета, лимиты расходов и свои категории</p><h1>Счета и бюджеты</h1></div>
+      </div>
+
+      <div class="row">
+        <!-- ============ СЧЕТА ============ -->
+        <div class="panel grow2" style="gap:6px" id="accounts">
+          <h2>Счета</h2>
+          <p class="sub" style="margin:4px 0 10px">Баланс меняется только операциями. Скрытые счета не видны другим участникам семьи</p>
+
+          <div class="acc" th:each="acc : ${accounts}" th:style="${acc.archived} ? 'opacity:.6' : null">
+            <span class="acc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h3"/></svg></span>
+            <div class="op-main">
+              <b th:text="${acc.name}">Общий счёт</b>
+              <span class="num" th:text="${acc.balanceText} + ' · ' + ${acc.typeLabel} + (${acc.archived} ? ' · в архиве' : '')">4 120,50 BYN · Карта</span>
+            </div>
+            <form th:unless="${acc.archived}" data-autosubmit th:action="@{/accounts/{id}/visibility(id=${acc.id})}" method="post">
+              <input type="hidden" name="returnTo" value="accounts">
+              <label class="check"><input type="checkbox" name="shared" value="true" th:checked="${acc.shared}">Видно семье</label>
+              <button type="submit" class="btn sm" data-nojs>Сохранить</button>
+            </form>
+            <details class="edit" th:open="${editAccountId == acc.id}">
+              <summary>Изменить</summary>
+              <div class="status warn" th:if="${editAccountId == acc.id and editError != null}" role="alert"><b th:text="${editError}">Ошибка</b></div>
+              <form class="form-grid" th:action="@{/accounts/{id}(id=${acc.id})}" method="post">
+                <label class="field">Название<input type="text" name="name" th:value="${acc.name}" maxlength="100" required></label>
+                <label class="field">Тип
+                  <select name="type">
+                    <option th:each="t : ${accountTypes}" th:value="${t}" th:text="${t.label}" th:selected="${t == acc.type}">Карта</option>
+                  </select>
+                </label>
+                <label class="check"><input type="checkbox" name="sharedWithFamily" value="true" th:checked="${acc.shared}">Видно семье</label>
+                <input type="hidden" name="_sharedWithFamily" value="on">
+                <button type="submit" class="btn sm primary">Сохранить</button>
+              </form>
+              <div class="row" style="gap:10px;margin-top:10px">
+                <form th:action="@{/accounts/{id}/archive(id=${acc.id})}" method="post">
+                  <button type="submit" class="btn sm" th:text="${acc.archived} ? 'Вернуть из архива' : 'В архив'">В архив</button>
+                </form>
+                <form th:action="@{/accounts/{id}/delete(id=${acc.id})}" method="post" data-confirm="Удалить счёт? Удалить можно только счёт без операций.">
+                  <button type="submit" class="btn sm danger">Удалить</button>
+                </form>
+              </div>
+            </details>
+          </div>
+          <p class="sub" th:if="${#lists.isEmpty(accounts)}" style="padding:12px 0">Счетов пока нет — добавьте первый.</p>
+
+          <form class="form-grid" th:action="@{/accounts}" th:object="${accountForm}" method="post" style="padding-top:18px;border-top:1px solid var(--bg);margin-top:8px" aria-label="Новый счёт">
+            <label class="field">Новый счёт
+              <input type="text" th:field="*{name}" th:errorclass="invalid" placeholder="Например, Зарплатная карта" maxlength="100">
+              <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </label>
+            <label class="field">Тип
+              <select th:field="*{type}">
+                <option th:each="t : ${accountTypes}" th:value="${t}" th:text="${t.label}">Карта</option>
+              </select>
+            </label>
+            <label class="field"><span th:text="'Начальный баланс, ' + ${currentUser.currency}">Начальный баланс, BYN</span>
+              <input type="text" inputmode="decimal" th:field="*{initialBalance}" th:errorclass="invalid" placeholder="0,00">
+              <span class="field-error" th:if="${#fields.hasErrors('initialBalance')}" th:errors="*{initialBalance}"></span>
+            </label>
+            <label class="check"><input type="checkbox" th:field="*{sharedWithFamily}">Видно семье</label>
+            <button type="submit" class="btn primary">Добавить счёт</button>
+          </form>
+        </div>
+
+
+        <!-- ============ БЮДЖЕТЫ ============ -->
+        <div class="panel grow2" id="budgets">
+          <div class="panel-head">
+            <h2 th:text="'Бюджеты на ' + ${budgetMonthTitle}">Бюджеты на октябрь 2026</h2>
+            <div class="month-nav">
+              <a th:href="@{/accounts(month=${budgetPrev})} + '#budgets'" aria-label="Предыдущий месяц">‹</a>
+              <a th:if="${budgetNext != null}" th:href="@{/accounts(month=${budgetNext})} + '#budgets'" aria-label="Следующий месяц">›</a>
+              <span th:unless="${budgetNext != null}" class="disabled" aria-hidden="true">›</span>
+            </div>
+          </div>
+          <p class="sub">Лимит расходов по категории на месяц. Пустое поле — бюджета нет</p>
+          <div class="bar-item" th:each="r : ${budgetRows}" style="padding:12px 0;border-top:1px solid var(--bg)">
+            <form class="between" th:action="@{/budgets}" method="post" style="flex-wrap:wrap">
+              <b th:text="${r.categoryName}">Продукты</b>
+              <span class="row" style="gap:8px;align-items:center">
+                <input type="hidden" name="categoryId" th:value="${r.categoryId}">
+                <input type="hidden" name="month" th:value="${budgetMonth}">
+                <label class="field"><span class="sr-only" th:text="'Лимит: ' + ${r.categoryName}">Лимит</span>
+                  <input type="text" inputmode="decimal" name="limitAmount" th:value="${r.limit != null} ? ${r.limit.stripTrailingZeros().toPlainString()} : ''"
+                         placeholder="Лимит" style="width:130px;height:44px">
+                </label>
+                <button type="submit" class="btn sm">Сохранить</button>
+              </span>
+            </form>
+            <th:block th:if="${r.row != null}">
+              <div class="bar-top"><span class="note" th:classappend="${r.row.over} ? 'over'" th:text="${r.row.note}">Осталось 88 BYN</span><span class="num" style="color:var(--ink2)" th:text="${r.row.spentText} + ' / ' + ${r.row.limitText}">412 / 500 BYN</span></div>
+              <div class="track"><div class="fill" th:classappend="${r.row.over} ? 'over'" th:style="'width:' + ${r.row.percent} + '%'"></div></div>
+            </th:block>
+          </div>
+          <form th:action="@{/budgets/copy-previous}" method="post">
+            <input type="hidden" name="month" th:value="${budgetMonth}">
+            <button type="submit" class="btn">Скопировать с прошлого месяца</button>
+          </form>
+        </div>
+
+        <!-- ============ КАТЕГОРИИ ============ -->
+        <div class="panel grow1" id="categories">
+          <h2>Мои категории</h2>
+          <p class="sub">Стандартные категории есть у всех: <span th:text="${#strings.listJoin(standardCategories.![name], ', ')}">Продукты, Транспорт</span></p>
+
+          <div class="acc" th:each="cat : ${ownCategories}" th:style="${cat.archived} ? 'opacity:.6' : null">
+            <div class="op-main">
+              <b th:text="${cat.name}">Хобби</b>
+              <span th:text="${cat.typeLabel} + (${cat.archived} ? ' · в архиве' : '')">Расход</span>
+            </div>
+            <details class="edit">
+              <summary>Изменить</summary>
+              <form class="form-grid" th:action="@{/categories/{id}(id=${cat.id})}" method="post">
+                <label class="field">Название<input type="text" name="name" th:value="${cat.name}" maxlength="60" required></label>
+                <button type="submit" class="btn sm primary">Переименовать</button>
+              </form>
+              <form th:action="@{/categories/{id}/archive(id=${cat.id})}" method="post" style="margin-top:10px">
+                <button type="submit" class="btn sm" th:text="${cat.archived} ? 'Вернуть из архива' : 'В архив'">В архив</button>
+              </form>
+            </details>
+          </div>
+          <p class="sub" th:if="${#lists.isEmpty(ownCategories)}">Своих категорий пока нет.</p>
+
+          <form th:action="@{/categories}" th:object="${categoryForm}" method="post" style="display:flex;flex-direction:column;gap:12px" aria-label="Новая категория">
+            <label class="field">Новая категория
+              <input type="text" th:field="*{name}" th:errorclass="invalid" placeholder="Например, Хобби" maxlength="60">
+              <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </label>
+            <label class="field">Тип
+              <select th:field="*{type}">
+                <option th:each="t : ${categoryTypes}" th:value="${t}" th:text="${t.label}">Расход</option>
+              </select>
+            </label>
+            <button type="submit" class="btn">Добавить категорию</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Профиль')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('profile')}"></aside>
+  <main>
+    <section class="view active" aria-label="Профиль">
+      <div class="head">
+        <div><p>Настройки учётной записи</p><h1>Профиль</h1></div>
+      </div>
+
+      <div class="row">
+        <form class="panel grow1" th:action="@{/profile}" th:object="${profileForm}" method="post" aria-labelledby="dataTitle">
+          <h2 id="dataTitle">Данные</h2>
+          <label class="field">Имя
+            <input type="text" th:field="*{name}" th:errorclass="invalid" maxlength="100" required>
+            <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+          </label>
+          <label class="field">Валюта
+            <select th:field="*{currency}">
+              <option th:each="c : ${currencies}" th:value="${c}" th:text="${c}">BYN</option>
+            </select>
+            <span class="note">Суммы не пересчитываются по курсу — меняется только обозначение</span>
+          </label>
+          <label class="field">Часовой пояс
+            <select th:field="*{timeZone}">
+              <option th:each="z : ${timeZones}" th:value="${z}" th:text="${z}">Europe/Minsk</option>
+            </select>
+            <span class="field-error" th:if="${#fields.hasErrors('timeZone')}" th:errors="*{timeZone}"></span>
+          </label>
+          <button type="submit" class="btn primary">Сохранить</button>
+        </form>
+
+        <form class="panel grow1" th:action="@{/profile/password}" th:object="${passwordForm}" method="post" aria-labelledby="pwdTitle">
+          <h2 id="pwdTitle">Пароль</h2>
+          <div class="status warn" th:if="${#fields.hasGlobalErrors()}" role="alert"><b th:each="err : ${#fields.globalErrors()}" th:text="${err}">Ошибка</b></div>
+          <label class="field">Текущий пароль
+            <input type="password" th:field="*{currentPassword}" th:errorclass="invalid" autocomplete="current-password">
+            <span class="field-error" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></span>
+          </label>
+          <label class="field">Новый пароль
+            <input type="password" th:field="*{newPassword}" th:errorclass="invalid" autocomplete="new-password">
+            <span class="field-error" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></span>
+          </label>
+          <label class="field">Повторите новый пароль
+            <input type="password" th:field="*{confirmPassword}" th:errorclass="invalid" autocomplete="new-password">
+            <span class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></span>
+          </label>
+          <button type="submit" class="btn">Изменить пароль</button>
+        </form>
+
+        <form class="panel grow1" th:action="@{/profile/delete}" th:object="${deleteForm}" method="post" aria-labelledby="delTitle"
+              data-confirm="Удалить учётную запись и все данные без возможности восстановления?">
+          <h2 id="delTitle">Удалить аккаунт</h2>
+          <p class="sub">Счета, операции, бюджеты и цели будут удалены. Если вы владелец семьи, сначала распустите её.</p>
+          <div class="status warn" th:if="${#fields.hasGlobalErrors()}" role="alert"><b th:each="err : ${#fields.globalErrors()}" th:text="${err}">Ошибка</b></div>
+          <label class="field">Пароль для подтверждения
+            <input type="password" th:field="*{password}" th:errorclass="invalid" autocomplete="current-password">
+            <span class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+          </label>
+          <button type="submit" class="btn danger">Удалить аккаунт</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

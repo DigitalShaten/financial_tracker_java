@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Цели')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('goals')}"></aside>
+  <main>
+    <section class="view active" id="goals" aria-label="Цели">
+      <div class="head">
+        <div><p>Личные и семейные накопления</p><h1>Цели</h1></div>
+        <a class="btn dark" href="#newGoal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Новая цель</a>
+      </div>
+
+      <div class="grid-auto" aria-label="Список целей" th:unless="${#lists.isEmpty(cards)}">
+        <a class="goal-card" th:each="c : ${cards}" th:href="@{/goals/{id}(id=${c.id})}"
+           th:attr="aria-current=${c.active} ? 'page' : null" style="text-decoration:none">
+          <span class="between" style="width:100%"><b th:text="${c.name}">Квартира</b><span class="tag" th:classappend="${c.family} ? 'family' : 'personal'" th:text="${c.family} ? 'Семейная' : 'Личная'">Семейная</span></span>
+          <span class="meta" th:text="${c.deadlineText}">Срок: сентябрь 2031</span>
+          <span class="track thin" style="display:block;width:100%"><span class="fill" style="display:block" th:style="'display:block;width:' + ${c.percent} + '%'"></span></span>
+          <span class="amt num" th:text="${c.amountText}">18 400 из 121 247 BYN</span>
+        </a>
+      </div>
+      <div class="panel" th:if="${#lists.isEmpty(cards)}">
+        <h2>Целей пока нет</h2>
+        <p class="sub">Создайте первую цель — например, отпуск или новый ноутбук. Мы посчитаем, сколько откладывать в месяц с учётом инфляции и процентов по вкладу.</p>
+      </div>
+
+      <th:block th:if="${goal != null}">
+      <div class="row stretch">
+        <form class="panel" id="goalPlanForm" style="flex:1 1 400px;min-width:0;gap:22px" method="post"
+              th:action="@{/goals/{id}/plan(id=${goal.id})}"
+              th:attr="data-saved=${goal.saved}, data-free-cash=${goal.freeCash}, data-currency=${currentUser.currency}, data-month=${goal.currentMonth}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <h2 th:text="'Расчёт цели «' + ${goal.name} + '»'">Расчёт цели «Квартира»</h2>
+            <p class="sub">Двигайте ползунки: взнос пересчитывается с учётом инфляции и процентов по вкладу</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div class="slider">
+              <div class="between"><label for="sl-price">Стоимость сегодня</label><output for="sl-price" class="num" data-for="price" data-format="money" th:text="${goal.price}">95 000 BYN</output></div>
+              <input type="range" id="sl-price" name="price" min="100" step="100" th:max="${goal.priceMax}" th:value="${goal.price}" th:disabled="${!goal.canEdit}">
+              <div class="range"><span th:text="'100 ' + ${currentUser.currency}">100 BYN</span><span th:text="${goal.priceMaxText}">300 000 BYN</span></div>
+            </div>
+            <div class="slider">
+              <div class="between"><label for="sl-years">Срок</label><output for="sl-years" class="num" data-for="years" data-format="years" th:text="${goal.years}">5 лет</output></div>
+              <input type="range" id="sl-years" name="years" min="1" max="20" step="1" th:value="${goal.years}" th:disabled="${!goal.canEdit}">
+              <div class="range"><span>1 год</span><span>20 лет</span></div>
+            </div>
+            <div class="slider">
+              <div class="between"><label for="sl-inflation">Инфляция в год</label><output for="sl-inflation" class="num" data-for="inflation" data-format="percent" th:text="${goal.inflation} + '%'">5%</output></div>
+              <input type="range" id="sl-inflation" name="inflation" min="0" max="15" step="0.5" th:value="${goal.inflation}" th:disabled="${!goal.canEdit}">
+              <div class="range"><span>0%</span><span>15%</span></div>
+            </div>
+            <div class="slider">
+              <div class="between"><label for="sl-rate">Доходность вклада в год</label><output for="sl-rate" class="num" data-for="rate" data-format="percent" th:text="${goal.rate} + '%'">6%</output></div>
+              <input type="range" id="sl-rate" name="rate" min="0" max="15" step="0.5" th:value="${goal.rate}" th:disabled="${!goal.canEdit}">
+              <div class="range"><span>0%</span><span>15%</span></div>
+            </div>
+          </div>
+          <div class="between" style="padding:16px;border-radius:14px;background:var(--soft);flex-wrap:wrap;font-size:14px">
+            <span style="color:var(--ink2)">Уже накоплено на цель</span><b class="num" th:text="${goal.savedText}">18 400 BYN</b>
+          </div>
+        </form>
+
+        <div class="result" style="flex:1 1 360px;min-width:0" aria-live="polite">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span class="label">Нужно откладывать в месяц</span>
+            <span class="big num"><span id="gPmt" th:text="${goal.paymentText}">1 382</span> <small th:text="${currentUser.currency}">BYN</small></span>
+            <span class="label" id="gMonths" th:text="${goal.monthsText}">60 ежемесячных взносов, до: сентябрь 2031</span>
+          </div>
+          <dl class="num">
+            <div><dt>Стоимость с учётом инфляции</dt><dd id="gFuture" th:text="${goal.futureText}">121 247 BYN</dd></div>
+            <div><dt>Ваши взносы за весь срок</dt><dd id="gContrib" th:text="${goal.contributionsText}">82 925 BYN</dd></div>
+            <div><dt>Проценты по вкладу добавят</dt><dd class="mint" id="gInterest" th:text="${goal.interestText}">+ 19 922 BYN</dd></div>
+            <div><dt>Удорожание из-за инфляции</dt><dd id="gInfl" th:text="${goal.inflationText}">+ 26 247 BYN</dd></div>
+          </dl>
+          <div class="status" id="gStatus" th:classappend="${goal.status.ok} ? 'ok' : 'warn'"><b th:text="${goal.status.title}">Цель достижима</b><span th:text="${goal.status.text}">Взнос — 73% от среднего свободного остатка</span></div>
+          <button th:if="${goal.canEdit}" type="submit" form="goalPlanForm" class="btn">Сохранить план</button>
+          <form th:if="${goal.canEdit}" th:action="@{/goals/{id}/delete(id=${goal.id})}" method="post" data-confirm="Удалить цель вместе со всеми пополнениями?">
+            <button type="submit" class="btn danger" style="width:100%">Удалить цель</button>
+          </form>
+          <p class="label" th:unless="${goal.canEdit}">Изменять план семейной цели может её создатель или владелец семьи</p>
+        </div>
+      </div>
+
+      <div class="panel" id="contribPanel">
+        <div class="panel-head"><h2>Кто сколько внёс</h2><span style="font-size:14px;font-weight:600;color:var(--green-dark)" th:text="${goal.contribNote}">Сентябрь: план выполнен</span></div>
+        <div class="split" th:unless="${#lists.isEmpty(goal.contributors)}">
+          <div th:each="p : ${goal.contributors}" th:style="'flex:' + ${p.weight} + ' 1 0;background:var(--' + (${p.mine} ? 'green' : 'amber') + ')'"></div>
+        </div>
+        <div class="grid-auto">
+          <div class="person" th:each="p : ${goal.contributors}">
+            <span class="av" th:classappend="${p.mine} ? 'me' : 'anna'" th:text="${p.initial}">Д</span>
+            <span><b th:text="${p.name}">Дмитрий</b><small class="num" th:text="${p.amountText} + ' · ' + ${p.percent} + '%'">10 900 BYN · 59%</small></span>
+          </div>
+          <form class="row" style="gap:10px;align-items:center" th:action="@{/goals/{id}/contributions(id=${goal.id})}" th:object="${contributionForm}" method="post">
+            <label class="field" style="flex:1 1 120px"><span class="sr-only">Сумма пополнения</span>
+              <input type="text" inputmode="decimal" th:field="*{amount}" placeholder="Сумма" required>
+            </label>
+            <button type="submit" class="btn sm">Пополнить цель</button>
+          </form>
+        </div>
+      </div>
+      </th:block>
+
+      <details class="panel edit" id="newGoal" th:open="${openNewGoal != null or #lists.isEmpty(cards)}">
+        <summary><h2 style="display:inline">Новая цель</h2></summary>
+        <form th:action="@{/goals}" th:object="${goalForm}" method="post" class="form-grid" style="margin-top:12px">
+          <div class="status warn" th:if="${#fields.hasGlobalErrors()}" role="alert" style="grid-column:1/-1"><b th:each="err : ${#fields.globalErrors()}" th:text="${err}">Ошибка</b></div>
+          <label class="field">Название
+            <input type="text" th:field="*{name}" th:errorclass="invalid" placeholder="Например, отпуск" maxlength="100">
+            <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+          </label>
+          <label class="field"><span th:text="'Стоимость сегодня, ' + ${currentUser.currency}">Стоимость сегодня, BYN</span>
+            <input type="text" inputmode="decimal" th:field="*{price}" th:errorclass="invalid" placeholder="3000">
+            <span class="field-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
+          </label>
+          <label class="field">Срок, лет
+            <input type="number" min="1" max="20" th:field="*{years}" th:errorclass="invalid">
+            <span class="field-error" th:if="${#fields.hasErrors('years')}" th:errors="*{years}"></span>
+          </label>
+          <label class="field">Инфляция в год, %
+            <input type="number" min="0" max="15" step="0.5" th:field="*{inflation}" th:errorclass="invalid">
+            <span class="field-error" th:if="${#fields.hasErrors('inflation')}" th:errors="*{inflation}"></span>
+          </label>
+          <label class="field">Доходность вклада, %
+            <input type="number" min="0" max="15" step="0.5" th:field="*{rate}" th:errorclass="invalid">
+            <span class="field-error" th:if="${#fields.hasErrors('rate')}" th:errors="*{rate}"></span>
+          </label>
+          <div class="seg box" role="radiogroup" aria-label="Чья цель" style="grid-template-columns:repeat(2,1fr)">
+            <label><input class="sr-only" type="radio" name="family" value="false" th:checked="${!goalForm.family}">Личная</label>
+            <label th:if="${currentUser.inFamily}"><input class="sr-only" type="radio" name="family" value="true" th:checked="${goalForm.family}">Семейная</label>
+          </div>
+          <button type="submit" class="btn primary">Создать цель</button>
+        </form>
+      </details>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+<script th:src="@{/js/goal-preview.js}"></script>
+</body>
+</html>

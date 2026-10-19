@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Учёт денег для семьи')}"></head>
+<body>
+<div class="landing">
+  <div class="landing-top">
+    <a class="logo" th:href="@{/}"><span class="logo-mark">F</span><span class="logo-name">FinTrack</span></a>
+    <a class="btn sm" th:href="@{/login}">Войти</a>
+  </div>
+
+  <section class="hero">
+    <h1>Учёт денег для вас и вашей семьи</h1>
+    <p>Записывайте доходы и расходы, планируйте бюджеты, копите на общие цели и получайте отчёт за месяц в Telegram.</p>
+    <div class="row" style="gap:12px">
+      <a class="btn primary" th:href="@{/register}">Зарегистрироваться</a>
+      <a class="btn" th:href="@{/login}">Войти</a>
+    </div>
+  </section>
+
+  <div class="grid-auto" aria-label="Преимущества">
+    <div class="stat">
+      <span class="label">Бюджеты</span>
+      <span class="value" style="font-size:20px">Лимиты по категориям</span>
+      <span class="hint">Видно, сколько потрачено и сколько осталось, а превышение подсвечивается сразу</span>
+    </div>
+    <div class="stat">
+      <span class="label">Общие цели</span>
+      <span class="value" style="font-size:20px">Копите вместе</span>
+      <span class="hint">Взнос в месяц считается с учётом инфляции и процентов по вкладу, видно вклад каждого</span>
+    </div>
+    <div class="stat accent">
+      <span class="label">Отчёт в Telegram</span>
+      <span class="value" style="font-size:20px">Итоги месяца</span>
+      <span class="hint">Доходы, расходы, бюджеты и прогресс по целям приходят в мессенджер в выбранный день</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

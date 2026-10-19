@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Операции')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('operations')}"></aside>
+  <main>
+    <section class="view active" aria-label="Операции">
+      <div class="head">
+        <div><p>Все доходы, расходы и переводы</p><h1>Операции</h1></div>
+      </div>
+
+      <form class="panel filters" th:action="@{/operations}" method="get" data-autosubmit aria-label="Фильтры">
+        <label class="field">Поиск<input type="search" name="query" th:value="${filter.query}" placeholder="Название или комментарий"></label>
+        <label class="field">С<input type="date" name="from" th:value="${filter.from}"></label>
+        <label class="field">По<input type="date" name="to" th:value="${filter.to}"></label>
+        <label class="field">Счёт
+          <select name="accountId">
+            <option value="">Все счета</option>
+            <option th:each="a : ${filterAccounts}" th:value="${a.id}" th:text="${a.name}" th:selected="${a.id == filter.accountId}">Общий счёт</option>
+          </select>
+        </label>
+        <label class="field">Категория
+          <select name="categoryId">
+            <option value="">Все категории</option>
+            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}" th:selected="${c.id == filter.categoryId}">Продукты</option>
+          </select>
+        </label>
+        <label class="field" th:unless="${#lists.isEmpty(members)}">Участник
+          <select name="memberId">
+            <option value="">Вся семья</option>
+            <option th:each="m : ${members}" th:value="${m.id}" th:text="${m.name}" th:selected="${m.id == filter.memberId}">Анна</option>
+          </select>
+        </label>
+        <button type="submit" class="btn sm" data-nojs>Применить</button>
+      </form>
+
+      <div class="row">
+        <div class="panel grow2" style="padding-top:8px;gap:0">
+          <div class="summary">
+            <span><b th:text="${ops.countText}">9 операций</b></span>
+            <span>Расходы: <b class="num" th:text="${ops.expenseText}">351,55 BYN</b></span>
+            <span>Доходы: <b class="num income" th:text="${ops.incomeText}">1 900,00 BYN</b></span>
+          </div>
+
+          <div th:each="day : ${ops.days}">
+            <div class="day-head">
+              <span th:text="${day.label}">18 сентября, пятница</span>
+              <span class="num" th:if="${day.expenseText != null}" th:text="${day.expenseText}">Расходы: 54,30 BYN</span>
+            </div>
+            <div class="op" th:each="op : ${day.items}">
+              <span class="av" th:classappend="${op.mine} ? 'me-soft' : 'anna-soft'" th:text="${op.authorInitial}">Д</span>
+              <div class="op-main">
+                <b th:if="${op.mine}"><a class="op-link" th:href="@{/operations/{id}/edit(id=${op.id})}" th:text="${op.title}" title="Изменить операцию">Супермаркет</a></b>
+                <b th:unless="${op.mine}" th:text="${op.title}">Кофейня</b>
+                <span th:text="${op.accountName} + ' · ' + ${op.authorName} + (${op.comment} != null ? ' · ' + ${op.comment} : '')">Общий счёт · Дмитрий</span>
+              </div>
+              <span class="tag neutral" th:text="${op.categoryName}">Продукты</span>
+              <span class="op-amount num" th:classappend="${op.amountClass()}" th:text="${op.signedAmountText}">− 46,80 BYN</span>
+              <form th:if="${op.mine}" class="inline" th:action="@{/operations/{id}/delete(id=${op.id})}" method="post" data-confirm="Удалить операцию? Баланс счёта будет пересчитан.">
+                <button type="submit" class="icon-btn" th:attr="aria-label='Удалить операцию «' + ${op.title} + '»'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+              </form>
+            </div>
+          </div>
+          <p class="sub" style="padding:24px 0" th:if="${#lists.isEmpty(ops.days)}">Ничего не найдено. Измените фильтры или добавьте операцию в форме справа.</p>
+
+          <nav class="pager" th:if="${ops.totalPages > 1}" aria-label="Страницы">
+            <a th:if="${ops.prevUrl != null}" class="btn sm" th:href="@{${ops.prevUrl}}">← Назад</a><span th:unless="${ops.prevUrl != null}"></span>
+            <span th:text="'Страница ' + ${ops.page} + ' из ' + ${ops.totalPages}">Страница 1 из 3</span>
+            <a th:if="${ops.nextUrl != null}" class="btn sm" th:href="@{${ops.nextUrl}}">Вперёд →</a><span th:unless="${ops.nextUrl != null}"></span>
+          </nav>
+        </div>
+
+        <form th:replace="~{fragments/operation-form :: opForm(@{/operations}, 'Новая операция', false)}"></form>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

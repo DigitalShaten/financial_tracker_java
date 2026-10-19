@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Изменить операцию')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('operations')}"></aside>
+  <main>
+    <section class="view active" aria-label="Изменить операцию">
+      <div class="head">
+        <div><p><a th:href="@{/operations}">← Все операции</a></p><h1>Изменить операцию</h1></div>
+      </div>
+      <div class="row" style="max-width:560px">
+        <form th:replace="~{fragments/operation-form :: opForm(@{/operations/{id}(id=${operationId})}, 'Операция', true)}"></form>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Обзор')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: sidebar('overview')}"></aside>
+  <main>
+    <section class="view active" id="overview" aria-label="Обзор">
+      <div class="head">
+        <div>
+          <p th:text="'Добрый день, ' + ${d.greetingName}">Добрый день, Дмитрий</p>
+          <div class="month-nav">
+            <a th:href="@{/dashboard(view=${d.view},month=${d.prevMonth})}" aria-label="Предыдущий месяц">‹</a>
+            <h1 th:text="${d.monthTitle}">Сентябрь 2026</h1>
+            <a th:if="${d.nextMonth != null}" th:href="@{/dashboard(view=${d.view},month=${d.nextMonth})}" aria-label="Следующий месяц">›</a>
+            <span th:unless="${d.nextMonth != null}" class="disabled" aria-hidden="true">›</span>
+          </div>
+        </div>
+        <div class="row" style="align-items:center;gap:12px">
+          <nav class="seg" th:unless="${#lists.isEmpty(d.viewOptions)}" aria-label="Чьи данные показывать">
+            <a th:each="o : ${d.viewOptions}" th:href="@{/dashboard(view=${o.value},month=${d.month})}"
+               th:text="${o.label}" th:attr="aria-current=${o.active} ? 'page' : null">Я</a>
+          </nav>
+          <a class="btn dark" th:href="@{/operations}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Добавить операцию</a>
+        </div>
+      </div>
+      <p class="sub" th:if="${d.viewNote != null}" th:text="${d.viewNote}" style="margin-top:-8px">Общая картина семьи</p>
+
+      <div class="grid-auto" aria-label="Итоги месяца">
+        <div class="stat"><span class="label">Баланс на счетах</span><span class="value num" th:text="${d.balanceText}">9 342,75</span><span class="hint" th:text="${currentUser.currency} + ' · ' + ${d.accountsText}">BYN · 5 счетов</span></div>
+        <div class="stat"><span class="label">Доходы за месяц</span><span class="value num income" th:text="${d.incomeText}">4 300,00</span><span class="hint" th:text="${currentUser.currency} + ' · зарплата и подработки'">BYN · зарплата и подработки</span></div>
+        <div class="stat"><span class="label">Расходы за месяц</span><span class="value num" th:text="${d.expenseText}">2 391,20</span><span class="hint" th:text="${currentUser.currency} + ' · ' + ${d.expenseShareText}">BYN · 56% от доходов</span></div>
+        <div class="stat accent">
+          <span class="label">Можно потратить сегодня</span>
+          <span class="value num" th:if="${d.todayText != null}"><span th:text="${d.todayText}">69,70</span> <small th:text="${currentUser.currency}">BYN</small></span>
+          <span class="value" th:unless="${d.todayText != null}">Месяц завершён</span>
+          <span class="hint" th:text="${d.todayHint}">До конца месяца 12 дней</span>
+        </div>
+      </div>
+
+      <div class="row stretch">
+        <div class="panel grow2">
+          <div class="panel-head"><h2>Бюджеты по категориям</h2><a th:href="@{/accounts(month=${d.month})}">Все категории</a></div>
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="bar-item" th:each="b : ${d.budgets}">
+              <div class="bar-top"><b th:text="${b.categoryName}">Продукты</b><span class="num" style="color:var(--ink2)" th:text="${b.spentText} + ' / ' + ${b.limitText}">412 / 500 BYN</span></div>
+              <div class="track"><div class="fill" th:classappend="${b.over} ? 'over'" th:style="'width:' + ${b.percent} + '%'"></div></div>
+              <span class="note" th:classappend="${b.over} ? 'over'" th:text="${b.note}">Осталось 88 BYN</span>
+            </div>
+            <p class="sub" th:if="${#lists.isEmpty(d.budgets)}">Бюджеты не заданы. <a th:href="@{/accounts(month=${d.month})}">Задать лимиты</a></p>
+          </div>
+        </div>
+        <div class="panel grow1">
+          <div class="panel-head"><h2>Цели</h2><a th:href="@{/goals}">Все цели</a></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <a class="goal-mini" th:each="g : ${d.goals}" th:href="@{/goals/{id}(id=${g.id})}">
+              <div class="between"><b th:text="${g.name}">Квартира</b><span class="tag" th:classappend="${g.family} ? 'family' : 'personal'" th:text="${g.family} ? 'Семейная' : 'Личная'">Семейная</span></div>
+              <div class="track thin"><div class="fill" th:style="'width:' + ${g.percent} + '%'"></div></div>
+              <div class="between num" style="font-size:13px;color:var(--muted)"><span th:text="${g.savedText} + ' из ' + ${g.priceText}">18 400 из 95 000 BYN</span><b style="color:var(--ink)" th:text="${g.percent} + '%'">19%</b></div>
+            </a>
+            <p class="sub" th:if="${#lists.isEmpty(d.goals)}">Целей пока нет. <a th:href="@{/goals}">Создать первую цель</a></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row stretch">
+        <div class="panel" style="flex:1 1 420px;min-width:0;gap:6px">
+          <div class="panel-head" style="margin-bottom:8px"><h2>Последние операции</h2><a th:href="@{/operations}">Все операции</a></div>
+          <div>
+            <div class="op" th:each="op : ${d.recent}">
+              <span class="av" th:classappend="${op.mine} ? 'me-soft' : 'anna-soft'" th:text="${op.authorInitial}">Д</span>
+              <div class="op-main"><b th:text="${op.title}">Супермаркет</b><span th:text="${op.categoryName} + ' · ' + ${op.shortDate} + (${d.showAuthors} ? ' · ' + ${op.authorName} : '')">Продукты · 18 сентября</span></div>
+              <span class="op-amount num" th:classappend="${op.amountClass()}" th:text="${op.signedAmountText}">− 46,80 BYN</span>
+            </div>
+            <p class="sub" th:if="${#lists.isEmpty(d.recent)}">Операций пока нет. <a th:href="@{/operations}">Добавить первую</a></p>
+          </div>
+        </div>
+        <div class="panel" style="flex:1 1 380px;min-width:0">
+          <div class="panel-head"><h2>Расходы по месяцам</h2>
+            <div class="legend">
+              <span th:if="${d.legendMine != null}"><i style="background:var(--green)"></i><th:block th:text="${d.legendMine}">Дмитрий</th:block></span>
+              <span th:if="${d.legendOthers != null}"><i style="background:var(--amber)"></i><th:block th:text="${d.legendOthers}">Анна</th:block></span>
+            </div>
+          </div>
+          <div class="chart">
+            <div class="col" th:each="c : ${d.chart}" th:classappend="${c.current} ? 'current'">
+              <span class="total num" th:text="${c.totalText}">1 286</span>
+              <div class="stack"><div class="a" th:style="'height:' + ${c.othersHeight} + 'px'"></div><div class="m" th:style="'height:' + ${c.mineHeight} + 'px'"></div></div>
+              <span class="m-label" th:text="${c.label}">Сен</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a class="banner" th:href="@{/telegram}">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4 3 11l6 2.5L11.5 20 21 4zM9 13.5l5-4"/></svg></span>
+        <span class="txt"><b th:text="${d.bannerTitle}">Отчёт за сентябрь придёт в Telegram 1 октября в 10:00</b><span th:text="${d.bannerText}">Итоги месяца, бюджеты и прогресс по целям</span></span>
+        <span class="go" th:text="${d.bannerAction}">Настроить отчёт</span>
+      </a>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>
