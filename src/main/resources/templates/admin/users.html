@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Пользователи')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: adminSidebar('users')}"></aside>
+  <main>
+    <section class="view active" aria-label="Пользователи">
+      <div class="head">
+        <div><p>Администрирование</p><h1>Пользователи</h1></div>
+        <span th:replace="~{fragments/layout :: serviceStatus}"></span>
+      </div>
+
+      <div class="panel">
+        <form class="form-grid" th:action="@{/admin/users}" method="get" role="search">
+          <label class="field">Поиск по e-mail<input type="search" name="q" th:value="${q}" placeholder="Например, anna@"></label>
+          <button type="submit" class="btn">Найти</button>
+        </form>
+
+        <p class="sub" th:if="${users.totalElements == 0}">Пользователи не найдены.</p>
+        <div class="table-wrap" th:unless="${users.totalElements == 0}">
+          <table class="table">
+            <thead><tr><th>Имя</th><th>E-mail</th><th>Регистрация</th><th>Статус</th><th><span class="sr-only">Действие</span></th></tr></thead>
+            <tbody>
+            <tr th:each="u : ${users.content}">
+              <td th:text="${u.name}">Анна</td>
+              <td th:text="${u.email}">anna@demo.by</td>
+              <td th:text="${u.registeredText}">3 сентября 2026</td>
+              <td><span class="tag" th:classappend="${u.enabled} ? 'family' : 'personal'" th:text="${u.enabled} ? 'Активен' : 'Заблокирован'">Активен</span></td>
+              <td>
+                <form th:if="${u.enabled}" th:action="@{/admin/users/{id}/block(id=${u.id})}" method="post"
+                      th:attr="data-confirm='Заблокировать ' + ${u.email} + '? Пользователь не сможет войти.'">
+                  <input type="hidden" name="q" th:value="${q}"><input type="hidden" name="page" th:value="${users.number}">
+                  <button type="submit" class="btn sm danger">Заблокировать</button>
+                </form>
+                <form th:unless="${u.enabled}" th:action="@{/admin/users/{id}/unblock(id=${u.id})}" method="post">
+                  <input type="hidden" name="q" th:value="${q}"><input type="hidden" name="page" th:value="${users.number}">
+                  <button type="submit" class="btn sm">Разблокировать</button>
+                </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <nav class="pager" th:if="${users.totalPages > 1}" aria-label="Страницы">
+          <a th:if="${users.hasPrevious()}" class="btn sm" th:href="@{/admin/users(q=${q},page=${users.number - 1})}">← Назад</a><span th:unless="${users.hasPrevious()}"></span>
+          <span th:text="'Страница ' + ${users.number + 1} + ' из ' + ${users.totalPages}">Страница 1 из 3</span>
+          <a th:if="${users.hasNext()}" class="btn sm" th:href="@{/admin/users(q=${q},page=${users.number + 1})}">Вперёд →</a><span th:unless="${users.hasNext()}"></span>
+        </nav>
+        <p class="sub" th:text="'Всего: ' + ${users.totalElements}">Всего: 2</p>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

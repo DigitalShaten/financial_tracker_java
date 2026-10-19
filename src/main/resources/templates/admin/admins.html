@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Администраторы')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: adminSidebar('admins')}"></aside>
+  <main>
+    <section class="view active" aria-label="Администраторы">
+      <div class="head">
+        <div><p>Администрирование</p><h1>Администраторы</h1></div>
+        <span th:replace="~{fragments/layout :: serviceStatus}"></span>
+      </div>
+
+      <div class="row">
+        <div class="panel grow2" style="min-width:0">
+          <h2>Список</h2>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Имя</th><th>E-mail</th><th><span class="sr-only">Действия</span></th></tr></thead>
+              <tbody>
+              <tr th:each="a : ${admins}">
+                <td>
+                  <b th:text="${a.name}">Администратор</b> <span class="tag solid" th:if="${a.me}">Это вы</span>
+                  <details class="edit">
+                    <summary>Изменить</summary>
+                    <form class="form-grid" th:action="@{/admin/admins/{id}(id=${a.id})}" method="post">
+                      <label class="field">Имя<input type="text" name="name" th:value="${a.name}" maxlength="100" required></label>
+                      <label class="field">E-mail<input type="email" name="email" th:value="${a.email}" maxlength="255" required></label>
+                      <label class="field">Новый пароль<input type="password" name="password" autocomplete="new-password" placeholder="Оставьте пустым, чтобы не менять"></label>
+                      <button type="submit" class="btn sm primary">Сохранить</button>
+                    </form>
+                  </details>
+                </td>
+                <td th:text="${a.email}">admin@fintrack.local</td>
+                <td>
+                  <form th:if="${!a.me and #lists.size(admins) > 1}" th:action="@{/admin/admins/{id}/delete(id=${a.id})}" method="post"
+                        th:attr="data-confirm='Удалить администратора ' + ${a.email} + '?'">
+                    <button type="submit" class="btn sm danger">Удалить</button>
+                  </form>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <form class="panel grow1" th:action="@{/admin/admins}" th:object="${adminForm}" method="post" style="align-self:flex-start">
+          <h2>Новый администратор</h2>
+          <div class="status warn" th:if="${#fields.hasGlobalErrors()}" role="alert"><b th:each="e : ${#fields.globalErrors()}" th:text="${e}">Этот e-mail уже занят</b></div>
+          <label class="field">Имя
+            <input type="text" th:field="*{name}" th:errorclass="invalid" maxlength="100">
+            <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+          </label>
+          <label class="field">E-mail
+            <input type="email" th:field="*{email}" th:errorclass="invalid" maxlength="255">
+            <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+          </label>
+          <label class="field">Пароль
+            <input type="password" name="password" autocomplete="new-password" placeholder="Не меньше 8 символов">
+          </label>
+          <button type="submit" class="btn primary">Добавить</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

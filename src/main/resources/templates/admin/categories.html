@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Категории')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: adminSidebar('categories')}"></aside>
+  <main>
+    <section class="view active" aria-label="Стандартные категории">
+      <div class="head">
+        <div><p>Администрирование</p><h1>Стандартные категории</h1></div>
+        <span th:replace="~{fragments/layout :: serviceStatus}"></span>
+      </div>
+
+      <div class="row">
+        <div class="grow2" style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div class="panel" th:each="group : ${categoryGroups}">
+            <h2 th:text="${group.key}">Расходы</h2>
+            <div class="table-wrap">
+              <table class="table">
+                <thead><tr><th>Название</th><th>Статус</th><th><span class="sr-only">Действия</span></th></tr></thead>
+                <tbody>
+                <tr th:each="cat : ${group.value}" th:style="${cat.archived} ? 'opacity:.6' : null">
+                  <td>
+                    <b th:text="${cat.name}">Продукты</b>
+                    <details class="edit">
+                      <summary>Переименовать</summary>
+                      <form class="form-grid" th:action="@{/admin/categories/{id}(id=${cat.id})}" method="post">
+                        <label class="field">Название<input type="text" name="name" th:value="${cat.name}" maxlength="60" required></label>
+                        <button type="submit" class="btn sm primary">Сохранить</button>
+                      </form>
+                    </details>
+                  </td>
+                  <td>
+                    <span class="tag" th:classappend="${cat.archived} ? 'neutral' : 'family'" th:text="${cat.archived} ? 'В архиве' : 'Доступна'">Доступна</span>
+                    <span class="tag neutral" th:if="${cat.used}">Есть операции</span>
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:8px;justify-content:flex-end">
+                      <form th:action="@{/admin/categories/{id}/archive(id=${cat.id})}" method="post">
+                        <button type="submit" class="btn sm" th:text="${cat.archived} ? 'Вернуть' : 'В архив'">В архив</button>
+                      </form>
+                      <form th:unless="${cat.used}" th:action="@{/admin/categories/{id}/delete(id=${cat.id})}" method="post"
+                            th:attr="data-confirm='Удалить категорию «' + ${cat.name} + '»? Бюджеты пользователей по ней тоже удалятся.'">
+                        <button type="submit" class="btn sm danger">Удалить</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <form class="panel grow1" th:action="@{/admin/categories}" th:object="${categoryForm}" method="post" style="align-self:flex-start">
+          <h2>Новая категория</h2>
+          <p class="sub">Стандартная категория появится у всех пользователей. Категорию с операциями нельзя удалить — её можно отправить в архив</p>
+          <label class="field">Название
+            <input type="text" th:field="*{name}" th:errorclass="invalid" placeholder="Например, Образование" maxlength="60">
+            <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+          </label>
+          <label class="field">Тип
+            <select th:field="*{type}">
+              <option th:each="t : ${types}" th:value="${t}" th:text="${t.label}">Расход</option>
+            </select>
+          </label>
+          <button type="submit" class="btn primary">Добавить</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+<div th:replace="~{fragments/layout :: toast}"></div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>
