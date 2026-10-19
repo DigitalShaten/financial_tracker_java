@@ -1,8 +1,5 @@
 package com.fintrack.entity;
 
-/**
- * Тип категории: доход или расход.
- */
 public enum CategoryType {
     INCOME("Доход"),
     EXPENSE("Расход");

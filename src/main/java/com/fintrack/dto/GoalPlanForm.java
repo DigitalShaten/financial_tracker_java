@@ -7,9 +7,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-/**
- * Параметры плана цели — значения ползунков.
- */
 @Getter
 @Setter
 @NoArgsConstructor

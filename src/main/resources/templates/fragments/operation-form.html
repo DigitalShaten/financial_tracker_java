@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <body>
-<!-- Форма операции (новая и изменение). action — адрес отправки, heading — заголовок, cancel — показывать «Отмена» -->
+<!-- Форма операции (новая и изменение). action - адрес отправки, heading - заголовок, cancel - показывать "Отмена" -->
 <form th:fragment="opForm(action, heading, cancel)" class="panel grow1" th:action="${action}" th:object="${form}"
       method="post" data-op-form aria-labelledby="opFormTitle" novalidate>
   <h2 id="opFormTitle" th:text="${heading}">Новая операция</h2>

@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Категории: стандартные (общие для всех, ведёт администратор) и свои.
- * Пользователь меняет только свои; стандартные для него «не найдены».
+ * Пользователь меняет только свои; стандартные для него "не найдены".
  */
 @Service
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    /** Стандартные и свои неархивные категории — для выбора в формах. */
+    /** Стандартные и свои неархивные категории - для выбора в формах. */
     @Transactional(readOnly = true)
     public List<CategoryView> available(Long userId) {
         return categoryRepository.findAvailable(userId).stream().map(CategoryService::toView).toList();
@@ -45,7 +45,7 @@ public class CategoryService {
                 .map(CategoryService::toView).toList();
     }
 
-    /** Стандартные неархивные категории — показываются на странице как справка. */
+    /** Стандартные неархивные категории - показываются на странице как справка. */
     @Transactional(readOnly = true)
     public List<CategoryView> standard() {
         return categoryRepository.findAllByUserIsNullOrderByTypeAscNameAsc().stream()

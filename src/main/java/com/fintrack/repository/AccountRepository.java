@@ -28,7 +28,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("select sum(a.balance) from Account a where a.id in :ids")
     BigDecimal sumBalance(@Param("ids") Collection<Long> ids);
 
-    /** При смене валюты в профиле валюта счетов меняется вместе с ней (без конвертации, см. README). */
+    /** При смене валюты в профиле валюта счетов меняется вместе с ней (без конвертации). */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update Account a set a.currency = :currency where a.user.id = :userId")
     void updateCurrency(@Param("userId") Long userId, @Param("currency") String currency);

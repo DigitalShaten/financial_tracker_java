@@ -11,9 +11,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-/**
- * Форма счёта. Начальный баланс используется только при создании.
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Подтверждение удаления учётной записи паролем.
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -8,9 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Форма профиля: имя, валюта, часовой пояс.
- */
 @Getter
 @Setter
 @NoArgsConstructor

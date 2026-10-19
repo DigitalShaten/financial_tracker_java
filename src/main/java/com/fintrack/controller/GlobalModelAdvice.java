@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.math.BigDecimal;
 
-/**
- * Общее для всех страниц: текущий пользователь в модели и правила разбора полей форм.
- */
 @ControllerAdvice
 @RequiredArgsConstructor
 public class GlobalModelAdvice {
@@ -31,7 +28,7 @@ public class GlobalModelAdvice {
     public void initBinder(WebDataBinder binder) {
         // Пробелы по краям убираются, пустая строка становится null
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-        // Суммы можно вводить с запятой и пробелами: «1 286,40»
+        // Суммы можно вводить с запятой и пробелами: "1 286,40"
         binder.registerCustomEditor(BigDecimal.class, new MoneyEditor());
     }
 }

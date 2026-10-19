@@ -7,9 +7,6 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
-/**
- * Пользователь сервиса (и обычный пользователь, и администратор).
- */
 @Entity
 @Table(name = "users")
 @Getter

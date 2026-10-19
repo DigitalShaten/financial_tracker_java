@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface GoalContributionRepository extends JpaRepository<GoalContribution, Long> {
 
-    /** «Накоплено» по нескольким целям сразу. */
+    /** "Накоплено" по нескольким целям сразу. */
     @Query("""
             select new com.fintrack.dto.GoalSum(c.goal.id, sum(c.amount))
             from GoalContribution c where c.goal.id in :goalIds group by c.goal.id

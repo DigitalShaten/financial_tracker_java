@@ -41,7 +41,6 @@ public class GoalService {
     private final AccessService accessService;
     private final Clock clock;
 
-    // ---------------------------------------------------------------- чтение
 
     /** Видимые пользователю цели: его личные и все семейные цели его семьи. */
     @Transactional(readOnly = true)
@@ -59,7 +58,7 @@ public class GoalService {
                 .orElseThrow(() -> new NotFoundException("Цель не найдена"));
     }
 
-    /** Изменять и удалять: личную — создатель, семейную — создатель или владелец семьи. */
+    /** Изменять и удалять: личную - создатель, семейную - создатель или владелец семьи. */
     @Transactional(readOnly = true)
     public boolean canEdit(Long userId, Goal goal) {
         if (goal.getOwner().getId().equals(userId)) {
@@ -91,7 +90,6 @@ public class GoalService {
                 goal.getInflationRate(), goal.getAnnualRate(), saved);
     }
 
-    // ---------------------------------------------------------------- изменение
 
     @Transactional
     public Goal create(Long userId, GoalForm form) {
@@ -99,7 +97,7 @@ public class GoalService {
                 form.getInflation(), form.getRate(), form.isFamily());
     }
 
-    /** Создание с точной датой цели (используется и демо-данными). */
+    /** Создание с точной датой цели. */
     @Transactional
     public Goal create(Long userId, String name, BigDecimal price, LocalDate targetDate,
                        BigDecimal inflation, BigDecimal rate, boolean family) {
@@ -118,7 +116,7 @@ public class GoalService {
         return goalRepository.save(goal);
     }
 
-    /** Сохранить план: ползунок «Срок, лет» задаёт дату — первое число месяца через годы × 12 месяцев. */
+    /** Сохранить план: ползунок "Срок, лет" задаёт дату - первое число месяца через годы * 12 месяцев. */
     @Transactional
     public void updatePlan(Long userId, Long goalId, GoalPlanForm form) {
         Goal goal = getEditable(userId, goalId);
@@ -133,7 +131,7 @@ public class GoalService {
         goalRepository.delete(getEditable(userId, goalId));
     }
 
-    /** Пополнить можно любую видимую цель (семейную — любой участник семьи). */
+    /** Пополнить можно любую видимую цель (семейную - любой участник семьи). */
     @Transactional
     public GoalContribution contribute(Long userId, Long goalId, BigDecimal amount, LocalDate date) {
         Goal goal = getVisible(userId, goalId);
@@ -165,11 +163,10 @@ public class GoalService {
         return YearMonth.now(clock.withZone(zone(userId))).plusMonths(years * 12L).atDay(1);
     }
 
-    // ---------------------------------------------------------------- реалистичность
 
     /**
-     * Свободные деньги — среднее (доходы − расходы) за 3 последних полных месяца
-     * по видимым счетам: для личной цели — свои счета, для семейной — режим «Вместе».
+     * Свободные деньги - среднее (доходы - расходы) за 3 последних полных месяца
+     * по видимым счетам: для личной цели - свои счета, для семейной - режим "Вместе".
      */
     @Transactional(readOnly = true)
     public BigDecimal freeCash(Long userId, boolean family) {
@@ -182,7 +179,7 @@ public class GoalService {
         return income.subtract(expense).divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP);
     }
 
-    /** Три порога: ≤ 75% — достижима, ≤ 100% — впритык, иначе — не успеть; свободных денег нет — отдельно. */
+    /** Три порога: <= 75% - достижима, <= 100% - впритык, иначе - не успеть; свободных денег нет - отдельно. */
     public RealismStatus assessRealism(BigDecimal payment, BigDecimal freeCash, String currency) {
         if (freeCash.signum() <= 0) {
             return new RealismStatus("Свободных денег в последние месяцы не оставалось",
@@ -204,7 +201,7 @@ public class GoalService {
                 + " в месяц. Увеличьте срок или сократите расходы на эту сумму.", false);
     }
 
-    /** «План на октябрь выполнен, опережаете на X» или «Осталось внести X в этом месяце». */
+    /** "План на октябрь выполнен, опережаете на X" или "Осталось внести X в этом месяце". */
     @Transactional(readOnly = true)
     public String monthStatus(Goal goal, BigDecimal payment, ZoneId zone, String currency) {
         YearMonth month = YearMonth.now(clock.withZone(zone));
@@ -217,12 +214,11 @@ public class GoalService {
         return "Осталось внести " + MoneyFormat.formatWhole(payment.subtract(paid), currency) + " в этом месяце";
     }
 
-    // ---------------------------------------------------------------- для обзора и страницы
 
     /**
-     * Плановые взносы за месяц, которые уменьшают «Можно потратить сегодня»: личные цели пользователя
-     * плюс его доля в семейных (взнос / число участников). В режиме «Вместе» — семейные цели целиком,
-     * в режиме участника — его доля в семейных целях.
+     * Плановые взносы за месяц, которые уменьшают "Можно потратить сегодня": личные цели пользователя
+     * плюс его доля в семейных (взнос / число участников). В режиме "Вместе" - семейные цели целиком,
+     * в режиме участника - его доля в семейных целях.
      */
     @Transactional(readOnly = true)
     public BigDecimal plannedMonthlySavings(Long userId, ViewMode mode) {
@@ -234,7 +230,7 @@ public class GoalService {
         BigDecimal total = BigDecimal.ZERO;
         for (Goal goal : goals) {
             if (YearMonth.from(goal.getTargetDate()).isBefore(current)) {
-                continue; // срок прошёл — цель неактивна
+                continue; // срок прошёл - цель неактивна
             }
             BigDecimal payment = plan(goal, saved.getOrDefault(goal.getId(), BigDecimal.ZERO), zone).monthlyPayment();
             if (!goal.isFamilyGoal()) {
@@ -250,7 +246,7 @@ public class GoalService {
         return total;
     }
 
-    /** До трёх целей для обзора; в режиме участника — только семейные. */
+    /** До трёх целей для обзора; в режиме участника - только семейные. */
     @Transactional(readOnly = true)
     public List<GoalMini> miniGoals(Long userId, ViewMode mode, String currency) {
         List<Goal> goals = visibleGoals(userId).stream()
@@ -281,7 +277,7 @@ public class GoalService {
         }).toList();
     }
 
-    /** Всё о выбранной цели для страницы «Цели». */
+    /** Всё о выбранной цели для страницы "Цели". */
     @Transactional(readOnly = true)
     public GoalDetail detail(Long userId, Long goalId) {
         Goal goal = getVisible(userId, goalId);
@@ -319,8 +315,8 @@ public class GoalService {
     }
 
     /**
-     * Цели для отчёта за месяц: процент от стоимости и «идёте по плану», если пополнения за месяц
-     * не меньше планового взноса. Личный отчёт — свои личные и семейные цели, семейный — только семейные.
+     * Цели для отчёта за месяц: процент от стоимости и "идёте по плану", если пополнения за месяц
+     * не меньше планового взноса. Личный отчёт - свои личные и семейные цели, семейный - только семейные.
      */
     @Transactional(readOnly = true)
     public List<GoalProgress> reportGoals(Long userId, boolean familyOnly, YearMonth month) {
@@ -337,7 +333,7 @@ public class GoalService {
         }).toList();
     }
 
-    /** Сколько отложено на цели за месяц: в личном отчёте — пополнения пользователя, в семейном — пополнения семейных целей. */
+    /** Сколько отложено на цели за месяц: в личном отчёте - пополнения пользователя, в семейном - пополнения семейных целей. */
     @Transactional(readOnly = true)
     public BigDecimal savedInMonth(Long userId, boolean family, YearMonth month) {
         BigDecimal sum;

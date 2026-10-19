@@ -1,8 +1,5 @@
 package com.fintrack.entity;
 
-/**
- * Тип счёта: наличные, карта, накопительный.
- */
 public enum AccountType {
     CASH("Наличные"),
     CARD("Карта"),

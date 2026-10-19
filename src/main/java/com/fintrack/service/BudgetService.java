@@ -22,7 +22,7 @@ import java.time.YearMonth;
 import java.util.*;
 
 /**
- * Месячные лимиты расходов по категориям. Бюджет = (пользователь, категория, месяц) → лимит;
+ * Месячные лимиты расходов по категориям. Бюджет = (пользователь, категория, месяц) -> лимит;
  * месяц хранится как первое число месяца.
  */
 @Service
@@ -78,7 +78,7 @@ public class BudgetService {
     }
 
     /**
-     * Строки исполнения бюджетов для обзора. Для нескольких пользователей (режимы «Вместе» и участника)
+     * Строки исполнения бюджетов для обзора. Для нескольких пользователей (режимы "Вместе" и участника)
      * лимиты складываются по названию категории, расходы считаются по видимым счетам.
      */
     @Transactional(readOnly = true)
@@ -96,7 +96,7 @@ public class BudgetService {
                 .toList();
     }
 
-    /** Редактор бюджетов на странице «Счета и бюджеты»: все доступные категории расходов пользователя. */
+    /** Редактор бюджетов на странице "Счета и бюджеты": все доступные категории расходов пользователя. */
     @Transactional(readOnly = true)
     public List<BudgetEditorRow> editorRows(Long userId, Set<Long> ownAccounts, YearMonth month) {
         String currency = userRepository.findById(userId).map(User::getCurrency).orElse("BYN");
@@ -131,7 +131,7 @@ public class BudgetService {
         return spent;
     }
 
-    /** Подпись: «Осталось N {валюта}» / «Бюджет исчерпан» / «Превышен на N%». */
+    /** Подпись: "Осталось N {валюта}" / "Бюджет исчерпан" / "Превышен на N%". */
     static BudgetRow row(String name, BigDecimal spent, BigDecimal limit, String currency) {
         boolean over = spent.compareTo(limit) > 0;
         int percent = spent.multiply(BigDecimal.valueOf(100)).divide(limit, 0, RoundingMode.HALF_UP)

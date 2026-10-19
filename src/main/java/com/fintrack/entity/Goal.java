@@ -9,9 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/**
- * Финансовая цель. {@code family == null} — личная цель создателя, иначе семейная.
- */
 @Entity
 @Table(name = "goals")
 @Getter

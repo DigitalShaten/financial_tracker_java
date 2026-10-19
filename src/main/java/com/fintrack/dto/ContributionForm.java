@@ -9,9 +9,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-/**
- * Пополнение цели.
- */
 @Getter
 @Setter
 @NoArgsConstructor

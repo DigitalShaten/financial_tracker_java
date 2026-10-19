@@ -2,11 +2,6 @@ package com.fintrack.dto;
 
 import java.util.List;
 
-/**
- * Текущий пользователь для шаблонов (кладётся в модель {@code GlobalModelAdvice}).
- *
- * @param familyMembers участники семьи для карточки в боковом меню (сам пользователь — первым)
- */
 public record CurrentUserView(Long id, String name, String currency, String familyName,
                               boolean inFamily, boolean familyOwner, boolean admin,
                               List<MemberChip> familyMembers) {
@@ -15,7 +10,7 @@ public record CurrentUserView(Long id, String name, String currency, String fami
         return initialOf(name);
     }
 
-    /** Имена участников семьи через запятую: «Дмитрий, Анна». */
+    /** Имена участников семьи через запятую: "Дмитрий, Анна". */
     public String familyMemberNames() {
         return String.join(", ", familyMembers.stream().map(MemberChip::name).toList());
     }

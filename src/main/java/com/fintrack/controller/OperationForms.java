@@ -13,9 +13,6 @@ import org.springframework.ui.Model;
 
 import java.util.List;
 
-/**
- * Справочники для формы операции и фильтров: счета, категории, участники семьи.
- */
 @Component
 @RequiredArgsConstructor
 public class OperationForms {

@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Счета пользователя. Любое изменение ищет счёт по id и владельцу: чужой счёт → 404.
+ * Счета пользователя. Любое изменение ищет счёт по id и владельцу: чужой счёт -> 404.
  */
 @Service
 @RequiredArgsConstructor
@@ -38,13 +38,13 @@ public class AccountService {
                 .orElseThrow(() -> new NotFoundException("Счёт не найден"));
     }
 
-    /** Неархивные счета — для выбора в формах. */
+    /** Неархивные счета - для выбора в формах. */
     @Transactional(readOnly = true)
     public List<Account> activeAccounts(Long userId) {
         return accountRepository.findAllByUser_IdAndArchivedFalseOrderByName(userId);
     }
 
-    /** Все счета для страницы «Счета и бюджеты»: сначала активные, потом архивные. */
+    /** Все счета для страницы "Счета и бюджеты": сначала активные, потом архивные. */
     @Transactional(readOnly = true)
     public List<AccountView> accountViews(Long userId) {
         String currency = userRepository.findById(userId).map(User::getCurrency).orElse("BYN");
@@ -83,7 +83,7 @@ public class AccountService {
         return account.isArchived();
     }
 
-    /** Удалить можно только счёт без операций — иначе история потеряется. */
+    /** Удалить можно только счёт без операций - иначе история потеряется. */
     @Transactional
     public void delete(Long userId, Long accountId) {
         Account account = getOwned(userId, accountId);

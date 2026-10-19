@@ -10,9 +10,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-/**
- * Лимит расходов по категории на месяц. Пустой лимит — убрать бюджет.
- */
 @Getter
 @Setter
 @NoArgsConstructor

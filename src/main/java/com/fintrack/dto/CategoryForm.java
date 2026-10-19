@@ -8,9 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Форма своей категории.
- */
 @Getter
 @Setter
 @NoArgsConstructor

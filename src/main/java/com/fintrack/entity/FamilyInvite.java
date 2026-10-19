@@ -7,9 +7,6 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
-/**
- * Одноразовый код приглашения в семью.
- */
 @Entity
 @Table(name = "family_invites")
 @Getter
@@ -36,7 +33,7 @@ public class FamilyInvite {
     @Column(name = "expires_at", nullable = false)
     private OffsetDateTime expiresAt;
 
-    /** Момент использования; null — код ещё не использован. */
+    /** Момент использования; null - код ещё не использован. */
     @Column(name = "used_at")
     private OffsetDateTime usedAt;
 }

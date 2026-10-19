@@ -3,10 +3,6 @@ package com.fintrack.controller;
 import java.beans.PropertyEditorSupport;
 import java.math.BigDecimal;
 
-/**
- * Превращает текст из поля суммы в BigDecimal. Принимает «1 286,40», «1286.40» и неразрывные пробелы.
- * Пустое поле — null (обязательность проверяет валидация формы).
- */
 public class MoneyEditor extends PropertyEditorSupport {
 
     @Override

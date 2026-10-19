@@ -56,7 +56,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
                                            @Param("from") LocalDate from,
                                            @Param("to") LocalDate to);
 
-    /** Расходы по месяцам и авторам — для графика на обзоре. */
+    /** Расходы по месяцам и авторам - для графика на обзоре. */
     @Query("""
             select new com.fintrack.dto.MonthAuthorTotal(
                        extract(year from t.operationDate), extract(month from t.operationDate),
@@ -90,7 +90,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
         return sum == null ? BigDecimal.ZERO : sum;
     }
 
-    /** Расходы пользователя по категории за период (все его счета) — для уведомления о бюджете. */
+    /** Расходы пользователя по категории за период (все его счета) - для уведомления о бюджете. */
     @Query("""
             select sum(t.amount) from Transaction t
             where t.user.id = :userId and t.category.id = :categoryId

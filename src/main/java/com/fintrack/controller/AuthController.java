@@ -19,9 +19,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * Вход и регистрация. Сам POST /login обрабатывает Spring Security.
- */
 @Controller
 @RequiredArgsConstructor
 public class AuthController {

@@ -6,9 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Смена пароля: текущий пароль, новый и повтор нового.
- */
 @Getter
 @Setter
 @NoArgsConstructor

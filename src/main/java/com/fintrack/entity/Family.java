@@ -7,9 +7,6 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
-/**
- * Семья — группа пользователей, которые видят открытые счета друг друга.
- */
 @Entity
 @Table(name = "families")
 @Getter

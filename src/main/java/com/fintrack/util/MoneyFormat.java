@@ -7,8 +7,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 /**
- * Единый формат денег в интерфейсе и в боте: «1 286,40 BYN».
- * Разделитель тысяч — неразрывный пробел, десятичный — запятая.
+ * Единый формат денег в интерфейсе и в боте: "1 286,40 BYN".
+ * Разделитель тысяч - неразрывный пробел, десятичный - запятая.
  */
 public final class MoneyFormat {
 
@@ -18,22 +18,22 @@ public final class MoneyFormat {
     private MoneyFormat() {
     }
 
-    /** «1 286,40». */
+    /** "1 286,40". */
     public static String format(BigDecimal value) {
         return formatter("#,##0.00").format(value.setScale(2, RoundingMode.HALF_UP));
     }
 
-    /** «1 286,40 BYN». */
+    /** "1 286,40 BYN". */
     public static String format(BigDecimal value, String currency) {
         return format(value) + NBSP + currency;
     }
 
-    /** Без копеек: «1 286» (для полос бюджета и целей, как в макете). */
+    /** Без копеек: "1 286" (для полос бюджета и целей). */
     public static String formatWhole(BigDecimal value) {
         return formatter("#,##0").format(value.setScale(0, RoundingMode.HALF_UP));
     }
 
-    /** «1 286 BYN». */
+    /** "1 286 BYN". */
     public static String formatWhole(BigDecimal value, String currency) {
         return formatWhole(value) + NBSP + currency;
     }

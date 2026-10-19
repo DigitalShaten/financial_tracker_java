@@ -17,9 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 
-/**
- * Операции: список с фильтрами и форма новой операции, изменение и удаление своих операций.
- */
 @Controller
 @RequiredArgsConstructor
 public class OperationController {
@@ -72,7 +69,7 @@ public class OperationController {
     public String update(@AuthenticationPrincipal CustomUserDetails me, @PathVariable Long id,
                          @Valid @ModelAttribute("form") TransactionForm form, BindingResult binding,
                          Model model, RedirectAttributes redirect) {
-        // Чужая операция → 404 ещё до проверки формы
+        // Чужая операция -> 404 ещё до проверки формы
         transactionService.getOwned(me.id(), id);
         if (!binding.hasErrors()) {
             try {

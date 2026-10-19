@@ -10,10 +10,6 @@ import org.springframework.ui.Model;
 
 import java.time.YearMonth;
 
-/**
- * Собирает модель страницы «Счета и бюджеты». Нужна нескольким контроллерам:
- * при ошибке в любой форме страница показывается заново со всеми панелями.
- */
 @Component
 @RequiredArgsConstructor
 public class AccountsPage {
@@ -39,7 +35,7 @@ public class AccountsPage {
         model.addAttribute("budgetMonth", budgetMonth.toString());
         model.addAttribute("budgetMonthTitle", DateFormat.monthLower(budgetMonth));
         model.addAttribute("budgetPrev", budgetMonth.minusMonths(1).toString());
-        // Бюджет можно задать заранее — на следующий месяц
+        // Бюджет можно задать заранее - на следующий месяц
         model.addAttribute("budgetNext", budgetMonth.isAfter(current) ? null : budgetMonth.plusMonths(1).toString());
         model.addAttribute("budgetRows", budgetService.editorRows(userId,
                 accessService.visibleAccountIds(userId, ViewMode.me()), budgetMonth));

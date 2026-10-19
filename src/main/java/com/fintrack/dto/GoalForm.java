@@ -6,9 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Новая цель: название, параметры плана и «Личная / Семейная».
- */
 @Getter
 @Setter
 @NoArgsConstructor

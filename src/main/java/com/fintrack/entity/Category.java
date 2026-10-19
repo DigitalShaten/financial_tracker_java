@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Категория дохода или расхода. {@code user == null} — стандартная категория (ведёт администратор).
- */
 @Entity
 @Table(name = "categories")
 @Getter

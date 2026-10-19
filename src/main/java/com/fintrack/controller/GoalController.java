@@ -21,9 +21,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-/**
- * Цели: список, расчёт выбранной цели, новая цель, план, пополнение, удаление.
- */
 @Controller
 @RequiredArgsConstructor
 public class GoalController {

@@ -10,9 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
-/**
- * Загружает пользователя по e-mail для входа. E-mail в базе хранится в нижнем регистре.
- */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {

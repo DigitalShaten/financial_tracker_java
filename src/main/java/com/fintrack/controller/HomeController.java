@@ -5,9 +5,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-/**
- * Главная страница: гостю — описание сервиса, администратору — его раздел, пользователю — обзор.
- */
 @Controller
 public class HomeController {
 

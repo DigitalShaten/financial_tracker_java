@@ -60,7 +60,7 @@ public class TransactionService {
         return saved;
     }
 
-    /** Изменение: отменить старое влияние на балансы → заполнить новыми данными → применить. */
+    /** Изменение: отменить старое влияние на балансы -> заполнить новыми данными -> применить. */
     @Transactional
     public void update(Long userId, Long txId, TransactionForm form) {
         Transaction tx = getOwned(userId, txId);
@@ -76,7 +76,7 @@ public class TransactionService {
         transactionRepository.delete(tx);
     }
 
-    /** Своя операция; чужая или несуществующая → 404. */
+    /** Своя операция; чужая или несуществующая -> 404. */
     @Transactional(readOnly = true)
     public Transaction getOwned(Long userId, Long txId) {
         return transactionRepository.findByIdAndUser_Id(txId, userId)
@@ -142,7 +142,7 @@ public class TransactionService {
         }
     }
 
-    /** Отменяет влияние операции на балансы — зеркально {@link #apply}. */
+    /** Отменяет влияние операции на балансы - зеркально {@link #apply}. */
     private void revert(Transaction tx) {
         switch (tx.getType()) {
             case INCOME -> tx.getAccount().withdraw(tx.getAmount());
@@ -161,7 +161,7 @@ public class TransactionService {
         return LocalDate.now(clock.withZone(ZoneId.of(zone)));
     }
 
-    /** Фильтр с периодом по умолчанию — текущий месяц. */
+    /** Фильтр с периодом по умолчанию - текущий месяц. */
     public TransactionFilter withDefaults(Long userId, TransactionFilter filter) {
         if (filter.from() != null || filter.to() != null) {
             return filter;
@@ -173,12 +173,12 @@ public class TransactionService {
 
     /**
      * Список операций по фильтру: свои счета и открытые счета семьи, по 30 на страницу,
-     * сгруппированный по дням, с итогами «Расходы / Доходы» по тем же фильтрам.
+     * сгруппированный по дням, с итогами "Расходы / Доходы" по тем же фильтрам.
      */
     @Transactional(readOnly = true)
     public OperationsPage list(Long userId, TransactionFilter filter) {
         Set<Long> visible = accessService.visibleAccountIds(userId, ViewMode.all());
-        // Скрытый или чужой счёт и участник не из своей семьи — «не найдено», а не пустой список
+        // Скрытый или чужой счёт и участник не из своей семьи - "не найдено", а не пустой список
         if (filter.accountId() != null && !visible.contains(filter.accountId())) {
             throw new NotFoundException("Счёт не найден");
         }
@@ -224,7 +224,7 @@ public class TransactionService {
                 page.hasNext() ? pageUrl(filter, page.getNumber() + 1) : null);
     }
 
-    /** Последние операции на заданных счетах (для обзора) — не позже указанной даты. */
+    /** Последние операции на заданных счетах (для обзора) - не позже указанной даты. */
     @Transactional(readOnly = true)
     public List<OperationView> recent(Long userId, Set<Long> accountIds, LocalDate until, int limit) {
         Specification<Transaction> spec = Specification.allOf(

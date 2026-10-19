@@ -14,9 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 
-/**
- * Обзор: итоги месяца, бюджеты, цели, последние операции, график. Параметры ?view= и ?month=YYYY-MM.
- */
 @Controller
 @RequiredArgsConstructor
 public class DashboardController {
@@ -34,7 +31,7 @@ public class DashboardController {
         return "dashboard";
     }
 
-    /** Неверный или будущий месяц — показываем текущий. */
+    /** Неверный или будущий месяц - показываем текущий. */
     static YearMonth parseMonth(String value, YearMonth current) {
         if (value == null || value.isBlank()) {
             return current;

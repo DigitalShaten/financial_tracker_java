@@ -9,10 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/**
- * Операция: доход, расход или перевод между своими счетами.
- * Для перевода заполнен {@code targetAccount}, а категория пустая.
- */
 @Entity
 @Table(name = "transactions")
 @Getter

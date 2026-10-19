@@ -56,7 +56,7 @@
   </div>
 </aside>
 
-<!-- Статус сервиса из Actuator health — в шапке страниц администратора -->
+<!-- Статус сервиса из Actuator health - в шапке страниц администратора -->
 <span th:fragment="serviceStatus" class="tag" th:classappend="${serviceStatus.up} ? 'family' : 'personal'"
       role="status" th:text="${serviceStatus.text}">Сервис работает</span>
 

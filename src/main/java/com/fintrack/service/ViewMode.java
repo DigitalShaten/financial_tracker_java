@@ -3,8 +3,8 @@ package com.fintrack.service;
 import com.fintrack.exception.NotFoundException;
 
 /**
- * Чьи данные показывать: «me» — только свои, «all» — свои и открытые счета семьи,
- * число — открытые счета одного участника семьи.
+ * Чьи данные показывать: "me" - только свои, "all" - свои и открытые счета семьи,
+ * число - открытые счета одного участника семьи.
  */
 public record ViewMode(String kind, Long memberId) {
 

@@ -24,7 +24,7 @@ public final class Plurals {
         return many;
     }
 
-    /** Число вместе со словом: «3 счёта». */
+    /** Число вместе со словом: "3 счёта". */
     public static String count(long n, String one, String few, String many) {
         return n + " " + of(n, one, few, many);
     }
